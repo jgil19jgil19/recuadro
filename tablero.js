@@ -64,6 +64,42 @@ const ponTablero = () => {
     }
     quedanN=quedan.length;
 }
+
+const generaAlAzar=()=>{
+    while(quedanN>0){
+        let c=quedan[Math.floor(quedanN*Math.random())];    
+        cierra (c.v, c.f, c.c, 's');
+        if(quedan.length>9*9*9){
+            alert('ha fallado y reiniciamos');
+            quedan=[];
+            tablero = [[], [], [], [], [], [], [], [], []];
+            bloques = [[], [], [], [], [], [], [], [], []];
+            casillasBloque = [];
+            filas = [];
+            columnas = [];
+            valBloque = [];
+            numeros = [];
+            ponCasillas();
+            ponTablero();
+            ponCaracteres();generaHtml();
+        }
+    }
+    alert(JSON.stringify(puestas))   
+}
+//let finiquitadas=[];
+//let reubicadas=[];
+const actQuedan=(celda)=>{
+    let aux=quedan[quedanN-1];
+    quedan[quedanN-1]=celda;
+    let pos=9*9*celda.f+9*celda.c+celda.v
+    if(celda.p===undefined) aux.p=pos;
+    else {aux.p=celda.p;pos=celda.p}
+    quedan[pos]=aux;
+    //finiquitadas.push(celda);
+    //reubicadas.push(quedan[pos]);
+    quedanN--;
+}
+
 function cargarArchivo() {
     var archivoInput = document.getElementById('archivoInput');
     var contenidoArchivo = document.getElementById('contenidoArchivo');
@@ -267,7 +303,7 @@ const compactaPosiblesCeldas = (arreglo) => {
 
 const selector = (i, j, elegibles) => {//alert(i+','+j+' kkk'+elegibles)
     activo = false;
-    let sel = '<select name="eleccion" onchange="cierra(this.value,' + i + ',' + j + ',\'s\')"><option onclick="cierra(\'-1\',' + i + ',' + j + ',\'s\')" value="-1"></option>';
+    let sel = '<select id="sel_'+i+'_'+j+'" name="eleccion" onchange="cierra(this.value,' + i + ',' + j + ',\'s\')"><option onclick="cierra(\'-1\',' + i + ',' + j + ',\'s\')" value="-1"></option>';
     elegibles.forEach(p => {
         sel += '<option value="'+p+'"> ' + caracteres[p] + '</option>';
     });
@@ -302,6 +338,7 @@ const eliminaCelda = (celda, v, i, j,kk) => {//alert(JSON.stringify(fijados)+'SI
     if(kk==='si') alert(kk+texto)
     if (celda.estado === 'c') {
         celda.estado = 'e';
+        actQuedan(celda);
         tablero[celda.f][celda.c].posibles.n--;
         if (tablero[celda.f][celda.c].posibles.n === 1) {
             //return celda
@@ -467,6 +504,7 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
             let grupoFijadas=puestas[puestas.length-1];
             grupoFijadas.push(tablero[i][j].posibles.numeros[valor]);
         }
+        actQuedan(tablero[i][j].posibles.numeros[valor])
         filas[i].huecos--;
         columnas[j].huecos--;
         valBloque[bq].huecos--;
