@@ -28,9 +28,9 @@ const getCasBloque = (fil, col) => {
     return casillasBloque[bloques[fil][col]];
 }
 
-let puestas=[];
-let quedan=[];
-let quedanN=0;
+let puestas = [];
+let quedan = [];
+let quedanN = 0;
 const ponTablero = () => {
     for (let i = 0; i < 9; i++) {
         filas[i] = { huecos: 9, numeros: [] }
@@ -51,7 +51,7 @@ const ponTablero = () => {
             tablero[i][j] = { valor: -1, posibles: { n: 9, numeros: [] } }
 
             for (let k = 0; k < 9; k++) {
-                let celda = { v: k, f: i, c: j, b: bloques[i][j], estado: 'c' }
+                let celda = { v: k, f: i, c: j, b: bloques[i][j], estado: 'c', pos: [9*9*i+9*j+k] }
                 tablero[i][j].posibles.numeros.push(celda);
 
                 filas[i].numeros[k].celdas.push(celda);
@@ -62,16 +62,16 @@ const ponTablero = () => {
             }
         }
     }
-    quedanN=quedan.length;
+    quedanN = quedan.length;
 }
 
-const generaAlAzar=()=>{
-    while(quedanN>0){
-        let c=quedan[Math.floor(quedanN*Math.random())];    
-        cierra (c.v, c.f, c.c, 's');
-        if(quedan.length>9*9*9){
+const generaAlAzar = () => {
+    while (quedanN > 0) {
+        let c = quedan[Math.floor(quedanN * Math.random())];
+        cierra(c.v, c.f, c.c, 's');
+        if (quedan.length > 9 * 9 * 9) {
             alert('ha fallado y reiniciamos');
-            quedan=[];
+            quedan = [];
             tablero = [[], [], [], [], [], [], [], [], []];
             bloques = [[], [], [], [], [], [], [], [], []];
             casillasBloque = [];
@@ -81,53 +81,142 @@ const generaAlAzar=()=>{
             numeros = [];
             ponCasillas();
             ponTablero();
-            ponCaracteres();generaHtml();
+            ponCaracteres(); generaHtml();
         }
     }
-    alert(JSON.stringify(puestas))   
+    //alert(JSON.stringify(puestas))
+    //reGeneraHtml()
 }
 //let finiquitadas=[];
 //let reubicadas=[];
-const actQuedan=(celda)=>{
-    let aux=quedan[quedanN-1];
-    quedan[quedanN-1]=celda;
-    let pos=9*9*celda.f+9*celda.c+celda.v
-    if(celda.p===undefined) aux.p=pos;
-    else {aux.p=celda.p;pos=celda.p}
-    quedan[pos]=aux;
-    //finiquitadas.push(celda);
+const actQuedan = (celda) => {
+    let aux = quedan[quedanN - 1];
+    if(aux!==celda){
+        quedan[quedanN - 1] = celda;
+        let pos=celda.pos[celda.pos.length-1];
+        aux.pos.push(pos);
+        /*if (celda.pos === undefined){
+            pos = 9 * 9 * celda.f + 9 * celda.c + celda.v 
+            aux.pos = pos;
+        } else { 
+            aux.pos = celda.pos; 
+            pos = celda.pos 
+        }*/
+        quedan[pos] = aux;
+    }
     //reubicadas.push(quedan[pos]);
     quedanN--;
+}
+
+const deshacer=()=>{
+    let ttx='['
+    for(let i=quedanN;i<quedan.length;i++){
+        ttx+=(i)+': '+JSON.stringify(quedan[i])+',\n'
+    }
+    //alert(ttx+']');
+    let p=quedanN;
+    let ultimaJugada=[];
+    //alert('ll'+p)
+    let sel=0;
+    //let kkkkk=quedanN+'\n';
+    //let primero=false;
+    do{
+        //if(p===0)primero=true;
+        let celda=quedan[p++];
+        if(celda.estado==='s')sel++;
+        //kkkkk+=(p-1)+': '+JSON.stringify(celda)+' - '+JSON.stringify(quedan[celda.pos[celda.pos.length-1]])+'\n';
+       // alert(p+JSON.stringify(celda));
+        ultimaJugada.push(celda);//alert('ñ'+celda.estado)
+    }while(p<quedan.length&&(sel===0||quedan[p].estado==='s'))//celda.estado!=='s')
+    //alert(kkkkk);
+    //alert(quedanN+'-'+p+'='+ultimaJugada.length+'\n'+JSON.stringify(ultimaJugada))
+    let paux=quedanN;
+    quedanN+=ultimaJugada.length;
+    ultimaJugada.forEach((celda,i)=>{
+    //return    
+            
+            //actQuedan(celda);
+            let pos=celda.pos[celda.pos.length-1];
+            let celda2=quedan[pos];
+            let aux=JSON.stringify(celda2);
+            //if(celda2!==celda)celda2.pos.pop();
+            let pos2=-1;
+            if(celda2!==celda){
+                celda2.pos.pop();
+                pos2=celda2.pos[celda2.pos.length-1];        
+                quedan[pos2]=celda2;
+                quedan[pos]=celda;
+            }
+            //let pos2=celda2.pos[celda2.pos.length-1];
+            //if (pos2!==(paux+i))alert(aux+'\n'+JSON.stringify(celda2)+'\n'+JSON.stringify(celda)+': '+(paux+i)+'-'+pos2+'pos'+pos)
+            //if(pos>quedanN||pos2>quedanN)alert(aux+'\n'+JSON.stringify(celda2)+'\n'+JSON.stringify(celda)+': '+(paux+i)+'+'+pos2+'pos'+pos)
+        if(celda.estado === 'e'){
+            tablero[celda.f][celda.c].posibles.n++;
+            filas[celda.f].numeros[celda.v].q++;
+            columnas[celda.c].numeros[celda.v].q++;
+            valBloque[celda.b].numeros[celda.v].q++;
+            numeros[celda.v].filas[celda.f].q++;
+        }else{//seleccionadas o fijadas
+            //tablero[i][j].posibles.numeros[valor].estado = estado;//'s';
+            tablero[celda.f][celda.c].valor = -1;
+            //alert(JSON.stringify(celda)+tablero[celda.f][celda.c].valor)
+            if (celda.estado === 's') {
+                puestas.pop();
+                //puestas.push([tablero[i][j].posibles.numeros[valor]]);
+                posHistoria = puestas.length;
+            } else {/*
+                let grupoFijadas = puestas[puestas.length - 1];
+                grupoFijadas.push(tablero[i][j].posibles.numeros[valor]);
+            */}
+            //actQuedan(tablero[i][j].posibles.numeros[valor])
+            filas[celda.f].huecos++;
+            columnas[celda.c].huecos++;
+            valBloque[celda.b].huecos++;
+        }
+        
+        /*if(celda2!==celda)celda2.pos.pop();
+        else{
+            quedan[pos]=celda2;
+            quedan[pos2]=celda;
+        }*/
+        celda.estado = 'c';
+    
+
+    })
+
+    //alert('siii'+JSON.stringify(tablero));
+    generaHtml();
+    
 }
 
 function cargarArchivo() {
     var archivoInput = document.getElementById('archivoInput');
     var contenidoArchivo = document.getElementById('contenidoArchivo');
-  
+
     var archivo = archivoInput.files[0];
     var lector = new FileReader();
-  
-    lector.onload = function(event) {
-      var contenido = event.target.result;
-      //contenidoArchivo.textContent = contenido;
-      HistPuestas=contenido;
-      puestas=JSON.parse(HistPuestas);
-      reGeneraHtml(puestas.length-1)
+
+    lector.onload = function (event) {
+        var contenido = event.target.result;
+        //contenidoArchivo.textContent = contenido;
+        HistPuestas = contenido;
+        puestas = JSON.parse(HistPuestas);
+        reGeneraHtml(puestas.length - 1)
     }
-  
+
     lector.readAsText(archivo);
-  }
-  function guardarArchivo(texto) {
+}
+function guardarArchivo(texto) {
     //const contenido = document.getElementById('contenido').value;
-    const contenido=texto;
+    const contenido = texto;
     const blob = new Blob([contenido], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
 
     const enlaceDescarga = document.createElement('a');
     enlaceDescarga.href = url;
-    let date=new Date();
-    let coleta='-'+date.getTime();
-    enlaceDescarga.download = 'miarchivo'+coleta+'.txt';
+    let date = new Date();
+    let coleta = '-' + date.getTime();
+    enlaceDescarga.download = 'miarchivo' + coleta + '.txt';
     enlaceDescarga.innerHTML = 'Descargar Archivo';
     document.body.appendChild(enlaceDescarga);
 
@@ -138,22 +227,22 @@ function cargarArchivo() {
 }
 let HistPuestas;//=JSON.stringify()
 let posHistoria;
-const reGeneraHtml=(n)=>{//alert('entramos: '+n)
-    
-    if(n===undefined||n===null||n>=puestas.length){//alert(n);
+const reGeneraHtml = (n) => {//alert('entramos: '+n)
+
+    if (n === undefined || n === null || n >= puestas.length) {//alert(n);
         //dejamos lo que se ve
-        let aux=puestas.splice(0,posHistoria);
-        puestas=aux;
-        HistPuestas=JSON.stringify(puestas);
+        let aux = puestas.splice(0, posHistoria);
+        puestas = aux;
+        HistPuestas = JSON.stringify(puestas);
         ponExtras(true);
-        document.getElementById('historial').innerHTML=genHistorial(posHistoria-1);
-    }else{
-        posHistoria=n+1;
-        HistPuestas=JSON.stringify(puestas);
-        let PuestasAux=JSON.parse(HistPuestas);
+        document.getElementById('historial').innerHTML = genHistorial(posHistoria - 1);
+    } else {//alert('carga?')
+        posHistoria = n + 1;
+        HistPuestas = JSON.stringify(puestas);
+        let PuestasAux = JSON.parse(HistPuestas);
         let cuerpo = document.getElementById("cuerpo");
-        cuerpo.innerHTML='';
-        puestas=[];
+        cuerpo.innerHTML = '';
+        puestas = [];
         tablero = [[], [], [], [], [], [], [], [], []];
         bloques = [[], [], [], [], [], [], [], [], []];
         casillasBloque = [];
@@ -161,14 +250,16 @@ const reGeneraHtml=(n)=>{//alert('entramos: '+n)
         columnas = [];
         valBloque = [];
         numeros = [];
+        quedan=[];
         ponCasillas();
         ponTablero();
         generaHtml();
         ponExtras();
-        for(let i=0;i<=n;i++){
-            let aux=PuestasAux[i][0];
-            cierra (aux.v, aux.f, aux.c, 's');
+        for (let i = 0; i <= n; i++) {
+            let aux = PuestasAux[i][0];
+            cierra(aux.v, aux.f, aux.c, 's');
         }
+        //alert(quedan.length)
         //ponExtras();
         /*alert('ee'+JSON.stringify(eliminadosExtra))
         for(let ei=0;ei<eliminadosExtra.length;ei++){
@@ -180,9 +271,9 @@ const reGeneraHtml=(n)=>{//alert('entramos: '+n)
         }*/
         //cierra (PuestasAux[n][0].v, PuestasAux[n][0].f, PuestasAux[n][0].c, 's');
         //alert('fff');
-       
-        puestas=JSON.parse(HistPuestas);
-        document.getElementById('historial').innerHTML=genHistorial(n);
+
+        puestas = JSON.parse(HistPuestas);
+        document.getElementById('historial').innerHTML = genHistorial(n);
     }
     /*alert('ee'+JSON.stringify(eliminadosExtra))
         if(eliminadosExtra.length>0){
@@ -202,31 +293,31 @@ const reGeneraHtml=(n)=>{//alert('entramos: '+n)
         }*/
 
 }
-const ponExtras = (repinta)=>{
+const ponExtras = (repinta) => {
     //alert('ee'+JSON.stringify(eliminadosExtra))
-    if(eliminadosExtra.length>0){
-        for(let ei=0;ei<eliminadosExtra.length;ei++){
-            let ce=eliminadosExtra[ei];
+    if (eliminadosExtra.length > 0) {
+        for (let ei = 0; ei < eliminadosExtra.length; ei++) {
+            let ce = eliminadosExtra[ei];
             //alert(ei+''+JSON.stringify(ce));
-            let cel=tablero[ce.f][ce.c].posibles.numeros[ce.v]
-            if(cel.estado==='c'){//alert(cel.estado)
-                eliminaCelda(cel,ce.v,ce.f,ce.c/*,'si'*/);
-            }else{//alert('--'+cel.estado)
+            let cel = tablero[ce.f][ce.c].posibles.numeros[ce.v]
+            if (cel.estado === 'c') {//alert(cel.estado)
+                eliminaCelda(cel, ce.v, ce.f, ce.c/*,'si'*/);
+            } else {//alert('--'+cel.estado)
                 //cel.estado='c';
-                
+
                 //eliminaCelda(cel,ce.v,ce.f,ce.c/*,'si'*/);
             }
         }
-        if(repinta)generaHtml();
+        if (repinta) generaHtml();
     }
 }
-const genHistorial=(n)=>{
-    let texto='';
-    puestas.forEach((elem,i)=>{
-        if(i===n){
-            texto+=`<span style="color:red; cusor: pointer;" title="pulsa para ir a este" onclick="reGeneraHtml(${i})">${i}; </span>`;
-        }else{
-            texto+=`<span style="cusor: pointer;" title="pulsa para ir a este" onclick="reGeneraHtml(${i})">${i}; </span>`;
+const genHistorial = (n) => {
+    let texto = '';
+    puestas.forEach((elem, i) => {
+        if (i === n) {
+            texto += `<span style="color:red; cusor: pointer;" title="pulsa para ir a este" onclick="reGeneraHtml(${i})">${i}; </span>`;
+        } else {
+            texto += `<span style="cusor: pointer;" title="pulsa para ir a este" onclick="reGeneraHtml(${i})">${i}; </span>`;
         }
     })
     return texto;
@@ -255,7 +346,7 @@ const generaHtml = () => {//alert('siiii')
                 //div.style.color("red");
                 //div.classList.add("fixed");
                 //alert(''+i+','+j+' : '+tablero[i][j].posibles.numeros[tablero[i][j].valor].estado)
-                if(tablero[i][j].posibles.numeros[tablero[i][j].valor].estado==='f'){//alert('mmm')
+                if (tablero[i][j].posibles.numeros[tablero[i][j].valor].estado === 'f') {//alert('mmm')
                     div.classList.add("fixed");
                 }
             } else {//alert(i+''+j);
@@ -280,7 +371,7 @@ const generaHtml = () => {//alert('siiii')
     }
     cuerpo.appendChild(container);
     //cuerpo.insertBefore(container, cuerpo.childNodes[0]);
-    document.getElementById('historial').innerHTML=genHistorial(puestas.length-1);
+    document.getElementById('historial').innerHTML = genHistorial(puestas.length - 1);
     //cuerpo.appendChild(container);
     //alert('niii'+cuerpo.innerHTML)
 }
@@ -303,9 +394,9 @@ const compactaPosiblesCeldas = (arreglo) => {
 
 const selector = (i, j, elegibles) => {//alert(i+','+j+' kkk'+elegibles)
     activo = false;
-    let sel = '<select id="sel_'+i+'_'+j+'" name="eleccion" onchange="cierra(this.value,' + i + ',' + j + ',\'s\')"><option onclick="cierra(\'-1\',' + i + ',' + j + ',\'s\')" value="-1"></option>';
+    let sel = '<select id="sel_' + i + '_' + j + '" name="eleccion" onchange="cierra(this.value,' + i + ',' + j + ',\'s\')"><option onclick="cierra(\'-1\',' + i + ',' + j + ',\'s\')" value="-1"></option>';
     elegibles.forEach(p => {
-        sel += '<option value="'+p+'"> ' + caracteres[p] + '</option>';
+        sel += '<option value="' + p + '"> ' + caracteres[p] + '</option>';
     });
     sel += '<option value="-1">-</option></select>';
     //<option>1</option><option>2</option><option>3</option><option>4</option></select>'
@@ -317,7 +408,7 @@ const selector = (i, j, elegibles) => {//alert(i+','+j+' kkk'+elegibles)
     ddiv.innerHTML = sel;
     ddiv.style.display = "block";
     //document.appendChild(ddiv);
-   //alert(pos.x+'entramos'+pos.y)
+    //alert(pos.x+'entramos'+pos.y)
 }
 
 let activo = true;
@@ -333,9 +424,9 @@ function obtenerCoordenadas(event) {
 }
 
 let fijados = [];
-const eliminaCelda = (celda, v, i, j,kk) => {//alert(JSON.stringify(fijados)+'SIIII'+JSON.stringify(celda));
+const eliminaCelda = (celda, v, i, j, kk) => {//alert(JSON.stringify(fijados)+'SIIII'+JSON.stringify(celda));
     let texto = JSON.stringify(celda)
-    if(kk==='si') alert(kk+texto)
+    if (kk === 'si') alert(kk + texto)
     if (celda.estado === 'c') {
         celda.estado = 'e';
         actQuedan(celda);
@@ -428,10 +519,28 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
     let ddiv = document.getElementById('ddiv');
     ddiv.style.display = "none";
     let div = document.getElementById('c' + i + '_' + j);
+
+    
     //let bloques = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
     if (v !== '-1') {
         let valor = parseInt(v);//alert(valor)
         let bq = tablero[i][j].posibles.numeros[valor].b;
+
+        tablero[i][j].posibles.numeros[valor].estado = estado;//'s';
+    tablero[i][j].valor = valor;
+    if (estado === 's') {
+        puestas.push([tablero[i][j].posibles.numeros[valor]]);
+        posHistoria = puestas.length;
+    } else {
+        let grupoFijadas = puestas[puestas.length - 1];
+        grupoFijadas.push(tablero[i][j].posibles.numeros[valor]);
+    }
+    actQuedan(tablero[i][j].posibles.numeros[valor])
+    filas[i].huecos--;
+    columnas[j].huecos--;
+    valBloque[bq].huecos--;
+
+
         /*if (bloques[bq] === -1) bbloques.push(bq)
         bloques[bq] = bq;*/
         if (lbloques[bq] === -1) {
@@ -494,25 +603,25 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
 
             }
         }
-        
-        tablero[i][j].posibles.numeros[valor].estado = estado;//'s';
+
+        /*tablero[i][j].posibles.numeros[valor].estado = estado;//'s';
         tablero[i][j].valor = valor;
-        if(estado==='s'){
+        if (estado === 's') {
             puestas.push([tablero[i][j].posibles.numeros[valor]]);
-            posHistoria=puestas.length;
-        }else{
-            let grupoFijadas=puestas[puestas.length-1];
+            posHistoria = puestas.length;
+        } else {
+            let grupoFijadas = puestas[puestas.length - 1];
             grupoFijadas.push(tablero[i][j].posibles.numeros[valor]);
         }
         actQuedan(tablero[i][j].posibles.numeros[valor])
         filas[i].huecos--;
         columnas[j].huecos--;
-        valBloque[bq].huecos--;
+        valBloque[bq].huecos--;*/
 
-    /*alert(fijados.length+',,,B '+JSON.stringify(lbloques)+'-'+JSON.stringify(bbloques)+'\n'+
-    'f '+JSON.stringify(lfilas)+'-'+JSON.stringify(bfilas)+'\n'+
-    'c '+JSON.stringify(lcolumnas)+'-'+JSON.stringify(bcolumnas)+'\n'+
-    'v '+JSON.stringify(lnumeros)+'-'+JSON.stringify(bnumeros)+'\n')*/
+        /*alert(fijados.length+',,,B '+JSON.stringify(lbloques)+'-'+JSON.stringify(bbloques)+'\n'+
+        'f '+JSON.stringify(lfilas)+'-'+JSON.stringify(bfilas)+'\n'+
+        'c '+JSON.stringify(lcolumnas)+'-'+JSON.stringify(bcolumnas)+'\n'+
+        'v '+JSON.stringify(lnumeros)+'-'+JSON.stringify(bnumeros)+'\n')*/
         while (bbloques.length > 0 || bfilas.length > 0 || bcolumnas.length > 0) {
             /*fija2();
             fija3();
@@ -521,10 +630,10 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
             fijaGen('b');
             fijaGen('f');
             fijaGen('c');
-           
+
             //fija();
         }
-        
+
 
         div.textContent = valor;
         div.style.color = 'red';
@@ -544,11 +653,11 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
 
 const fijaGen = (tipo) => {//alert(tipo)
     let fulminadas = [];
-    let fcb1=bbloques;
-    switch(tipo){
-        case 'b': fcb1=bbloques;break;
-        case 'f': fcb1=bfilas;break;
-        case 'c': fcb1=bcolumnas;break;
+    let fcb1 = bbloques;
+    switch (tipo) {
+        case 'b': fcb1 = bbloques; break;
+        case 'f': fcb1 = bfilas; break;
+        case 'c': fcb1 = bcolumnas; break;
     }
     while (fcb1.length > 0) {//alert('..')        
         let b = bbloques[0];
@@ -579,8 +688,8 @@ const fijaGen = (tipo) => {//alert(tipo)
         let filasNum = [[], [], [], [], [], [], [], [], []];
         let colsNum = [[], [], [], [], [], [], [], [], []];
         let bloquesNum = [[], [], [], [], [], [], [], [], []];
-        let encontrados=[];
-        let pendientes=[];
+        let encontrados = [];
+        let pendientes = [];
         fcbTipo.forEach((c, ic) => {//alert(c)
             //let celda = { v: k, f: i, c: j, b: bloques[i][j], estado: 'c' }
             //tablero[i][j].posibles.numeros.push(celda);
@@ -592,7 +701,7 @@ const fijaGen = (tipo) => {//alert(tipo)
             //let co=[];
             //let lfi=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
             //let lco=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
-            
+
             for (let i = 0; i < 9; i++) {
                 let celda;
                 switch (tipo) {
@@ -694,7 +803,7 @@ const fijaGen = (tipo) => {//alert(tipo)
                         }
                     })
                 }
-            }else {//filas y columnas
+            } else {//filas y columnas
                 if (bloquesNum[num].length === 1) {
                     casillasBloque[bloquesNum[num][0]].forEach(cf => {
                         let celda = tablero[cf[0]][cf[1]].posibles.numeros[num];
@@ -710,35 +819,35 @@ const fijaGen = (tipo) => {//alert(tipo)
 
                     })
                 }
-                
+
             }
         }
         //alert(JSON.stringify(fulminadas));
-        let ttt='++b: '+b+'\n';
-        let celdAcum=[0,0,0,0,0,0,0,0,0];
-        let celdAcumCon=0;
-        let resul=0;
-        let finalizado=false;
+        let ttt = '++b: ' + b + '\n';
+        let celdAcum = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let celdAcumCon = 0;
+        let resul = 0;
+        let finalizado = false;
         let tope;
-        let comienzo=0;
-        let inconceldas=0;
+        let comienzo = 0;
+        let inconceldas = 0;
         /*filas[i].numeros.push({ v: ii, q: 9, celdas: [] })
             columnas[i].numeros.push({ v: ii, q: 9, celdas: [] })
             valBloque[i].numeros.push({ v: ii, q: 9, celdas: [] })*/
         switch (tipo) {
             case 'b':
-                tope=valBloque[b].huecos
+                tope = valBloque[b].huecos
                 break;
             case 'f':
-                tope=filas[b].huecos
+                tope = filas[b].huecos
                 break;
             case 'c':
-                tope=columnas[b].huecos
+                tope = columnas[b].huecos
                 break;
         }
-        for(let i=2;i<tope;i++){//alert(i+'--h: '+valBloque[b].huecos)
-            let nceld=0;
-            for(let j=0;j<grupos[i].length;j++){ //alert('b:'+b+'i'+i+'j'+j+' l: '+grupos[i].length+'\n'+JSON.stringify(grupos[i][j]))
+        for (let i = 2; i < tope; i++) {//alert(i+'--h: '+valBloque[b].huecos)
+            let nceld = 0;
+            for (let j = 0; j < grupos[i].length; j++) { //alert('b:'+b+'i'+i+'j'+j+' l: '+grupos[i].length+'\n'+JSON.stringify(grupos[i][j]))
                 /*if(j===0 && resul===0){//alert('entro')
                     resul=JSON.parse(JSON.stringify(grupos[i][j]))
                 }else{
@@ -754,76 +863,76 @@ const fijaGen = (tipo) => {//alert(tipo)
                 }*/
                 //alert(JSON.stringify(resul));
                 //if(resul.ns.length===resul.c.length)finalizado=true;
-                nceld+=grupos[i][j].c.length;
-                if(i===grupos[i][j].c.length){
-                    if(valBloque[b].huecos===i)ttt+='*'+i+'*';
-                    else ttt+='¡*'+i+'*!'
+                nceld += grupos[i][j].c.length;
+                if (i === grupos[i][j].c.length) {
+                    if (valBloque[b].huecos === i) ttt += '*' + i + '*';
+                    else ttt += '¡*' + i + '*!'
                 }
                 //let encontrados=[];
                 //let pendientes=[];
-                if (i===grupos[i][j].c.length) encontrados.push(grupos[i][j]);
-                else pendientes.push (grupos[i][j]);
+                if (i === grupos[i][j].c.length) encontrados.push(grupos[i][j]);
+                else pendientes.push(grupos[i][j]);
                 //pendientes.push (grupos[i][j]);
                 //if(finalizado)break;
             }
-            celdAcumCon+=nceld;
-            if(comienzo===0&&celdAcumCon>=i)comienzo=i;
-            if(inconceldas===0&&celdAcumCon>0)inconceldas=i
-            celdAcum[i]=celdAcumCon;
-            ttt+='num: '+i+'; celdas: '+nceld+'\n';
+            celdAcumCon += nceld;
+            if (comienzo === 0 && celdAcumCon >= i) comienzo = i;
+            if (inconceldas === 0 && celdAcumCon > 0) inconceldas = i
+            celdAcum[i] = celdAcumCon;
+            ttt += 'num: ' + i + '; celdas: ' + nceld + '\n';
             //if(finalizado)break;
         }
         //alert("Empezar: "+comienzo+'; con cdldas: '+inconceldas+'\n'+ttt+'\n'+JSON.stringify(celdAcum)+'\n'+finalizado+'\n'+JSON.stringify(resul)+'\n'
         //+JSON.stringify(encontrados)+'\n++'+JSON.stringify(pendientes)+'\n'+Number.isInteger(pendientes));
-        for(let i=0;i<pendientes.length;i++){
-            for(let j=i+1;j<pendientes.length;j++){
-                let ajuntar=true;
-                if(Number.isInteger(pendientes[i].c[0])){//alert('jjj')
-                    if(pendientes[j].lc[pendientes[i].c[0]]!==-1)ajuntar=false;
-                }else{
-                    let aux=pendientes[i].c[0];
-                    for(let k=0;k<pendientes[j].c.length;k++){
-                        let aux2=pendientes[j].c[k];
-                        if(aux[0]===aux2[0]&&aux[1]===aux2[1]){
-                            ajuntar=false;
-                            break; 
+        for (let i = 0; i < pendientes.length; i++) {
+            for (let j = i + 1; j < pendientes.length; j++) {
+                let ajuntar = true;
+                if (Number.isInteger(pendientes[i].c[0])) {//alert('jjj')
+                    if (pendientes[j].lc[pendientes[i].c[0]] !== -1) ajuntar = false;
+                } else {
+                    let aux = pendientes[i].c[0];
+                    for (let k = 0; k < pendientes[j].c.length; k++) {
+                        let aux2 = pendientes[j].c[k];
+                        if (aux[0] === aux2[0] && aux[1] === aux2[1]) {
+                            ajuntar = false;
+                            break;
                         }
                     }
                 }
-                if(ajuntar){
-                    resul=une(pendientes[j],pendientes[i]);
-                    if(resul.c.length===resul.ns.length)encontrados.push(resul);
+                if (ajuntar) {
+                    resul = une(pendientes[j], pendientes[i]);
+                    if (resul.c.length === resul.ns.length) encontrados.push(resul);
                     else {
-                        if(resul.lns.length<tope){
+                        if (resul.lns.length < tope) {
                             pendientes.push(resul);
                         }
                     }
                 }
-                if(j>10)alert('i: '+i+' j: '+j+'\n'+JSON.stringify(pendientes))
+                if (j > 10) alert('i: ' + i + ' j: ' + j + '\n' + JSON.stringify(pendientes))
             }
         }
-        encontrados.forEach(elem=>{
+        encontrados.forEach(elem => {
             fcbTipo.forEach((c, ci) => {
-            if (elem.lc[ci] === -1) {
-                let celdas;
-                switch (tipo) {
-                    case 'b':
-                        celdas = tablero[c[0]][c[1]].posibles.numeros;
-                        break;
-                    case 'f':
-                        celdas = tablero[b][c].posibles.numeros;
-                        break;
-                    case 'c':
-                        celdas = tablero[c][b].posibles.numeros;
-                        break;
-                }
-                //let celdas=tablero[c[0]][c[1]].posibles.numeros;
-                elem.ns.forEach(n => {
-                    if (celdas[n].estado === 'c') {
-                        fulminadas.push(celdas[n])
+                if (elem.lc[ci] === -1) {
+                    let celdas;
+                    switch (tipo) {
+                        case 'b':
+                            celdas = tablero[c[0]][c[1]].posibles.numeros;
+                            break;
+                        case 'f':
+                            celdas = tablero[b][c].posibles.numeros;
+                            break;
+                        case 'c':
+                            celdas = tablero[c][b].posibles.numeros;
+                            break;
                     }
-                })
-            }
+                    //let celdas=tablero[c[0]][c[1]].posibles.numeros;
+                    elem.ns.forEach(n => {
+                        if (celdas[n].estado === 'c') {
+                            fulminadas.push(celdas[n])
+                        }
+                    })
+                }
             })
         })
     }
@@ -836,39 +945,39 @@ const fijaGen = (tipo) => {//alert(tipo)
     //alert(JSON.stringify(lbaux)+'\n'+JSON.stringify(baux)+'\G'+JSON.stringify(lbloques)+'\n'+JSON.stringify( bbloques))
 }
 
-const une=(c1,c2)=>{
-    let in1=0;
-    let in2=0;
-    let ic1=0;
-    let ic2=0;
-    let res={c:[],ns:[],lc:[],lns:[]}
+const une = (c1, c2) => {
+    let in1 = 0;
+    let in2 = 0;
+    let ic1 = 0;
+    let ic2 = 0;
+    let res = { c: [], ns: [], lc: [], lns: [] }
     //json.parse(json.stringify(c1));
     //let c2=json.parse(json.stringify(c2));
-    for(let i=0;i<9;i++){
-        if(c1.lns[i]!==-1&&c2.lns[i]!==-1){
+    for (let i = 0; i < 9; i++) {
+        if (c1.lns[i] !== -1 && c2.lns[i] !== -1) {
             res.lns.push(i);
             res.ns.push(c1.ns[in1++]);
             in2++;
-        }else if(c1.lns[i]!==-1&&c2.lns[i]===-1){
+        } else if (c1.lns[i] !== -1 && c2.lns[i] === -1) {
             res.lns.push(i);
             res.ns.push(c1.ns[in1++]);
-        }else if(c2.lns[i]!==-1&&c1.lns[i]===-1){
+        } else if (c2.lns[i] !== -1 && c1.lns[i] === -1) {
             res.lns.push(i);
             res.ns.push(c2.ns[in2++]);
-        }else{
+        } else {
             res.lns.push(-1);
         }
-        if(c1.lc[i]!==-1&&c2.lc[i]!==-1){
+        if (c1.lc[i] !== -1 && c2.lc[i] !== -1) {
             res.lc.push(i);
             res.c.push(c1.c[ic1++]);
             ic2++;
-        }else if(c1.lc[i]!==-1&&c2.lc[i]===-1){
+        } else if (c1.lc[i] !== -1 && c2.lc[i] === -1) {
             res.lc.push(i);
             res.c.push(c1.c[ic1++]);
-        }else if(c2.lc[i]!==-1&&c1.lc[i]===-1){
+        } else if (c2.lc[i] !== -1 && c1.lc[i] === -1) {
             res.lc.push(i);
             res.c.push(c2.c[ic2++]);
-        }else{
+        } else {
             res.lc.push(-1);
         }
     }
@@ -878,8 +987,8 @@ const une=(c1,c2)=>{
 
 const fijaNum = () => {
     let fulminadas = [];
-    if(bbloques.length > 0) {
-    //while (bbloques.length > 0) {//alert('..')        
+    if (bbloques.length > 0) {
+        //while (bbloques.length > 0) {//alert('..')        
         let b = bbloques[0];
         /*lbloques[b] = -1;
         bbloques.splice(0, 1);*/
@@ -889,10 +998,10 @@ const fijaNum = () => {
         let filasNum = [[], [], [], [], [], [], [], [], []];
         let colsNum = [[], [], [], [], [], [], [], [], []];//[0, 1, 2, 3, 4, 5, 6, 7, 8]
         //valBloque[i].numeros.push({ v: ii, q: 9, celdas: [] })
-        let encontrados=[];
-        let pendientes=[];
+        let encontrados = [];
+        let pendientes = [];
         [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach((c, ic) => {//alert(c)
-        //casillasBloque[b].forEach((c, ic) => {//alert(c)
+            //casillasBloque[b].forEach((c, ic) => {//alert(c)
             //let celda = { v: k, f: i, c: j, b: bloques[i][j], estado: 'c' }
             //tablero[i][j].posibles.numeros.push(celda);
             //tablero[i][j] = { valor: -1, posibles: { n: 9, numeros: [] } }
@@ -904,7 +1013,7 @@ const fijaNum = () => {
             //let lfi=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
             //let lco=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
             for (let i = 0; i < 9; i++) {
-                let celda =valBloque[b].numeros[c].celdas[i];
+                let celda = valBloque[b].numeros[c].celdas[i];
                 //let celda = tablero[c[0]][c[1]].posibles.numeros[i];
                 //alert(JSON.stringify(celda))
                 if (celda.estado === 'c') {
@@ -931,7 +1040,7 @@ const fijaNum = () => {
                 }
             }
             //valBloque[b].numeros[c].celdas[i]
-            let grupo =grupos[valBloque[b].numeros[c].q]
+            let grupo = grupos[valBloque[b].numeros[c].q]
             //let grupo = grupos[tablero[c[0]][c[1]].posibles.n];
             //alert('b:'+b+'c:'+c+'\n'+JSON.stringify(ns)+'..\n'+JSON.stringify(lns)+'..\n'+JSON.stringify(grupo)) 
             let nuevo = true;
@@ -982,20 +1091,20 @@ const fijaNum = () => {
                 })
             }
         }
-      
 
-        let ttt='++b: '+b+'\n';
-        let celdAcum=[0,0,0,0,0,0,0,0,0];
-        let celdAcumCon=0;
-        let resul=0;
-        let finalizado=false;
-        let tope=valBloque[b].huecos;
-        let comienzo=0;
-        let inconceldas=0;
 
-        for(let i=2;i<tope;i++){//alert(i+'--h: '+valBloque[b].huecos)
-            let nceld=0;
-            for(let j=0;j<grupos[i].length;j++){ //alert('b:'+b+'i'+i+'j'+j+' l: '+grupos[i].length+'\n'+JSON.stringify(grupos[i][j]))
+        let ttt = '++b: ' + b + '\n';
+        let celdAcum = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let celdAcumCon = 0;
+        let resul = 0;
+        let finalizado = false;
+        let tope = valBloque[b].huecos;
+        let comienzo = 0;
+        let inconceldas = 0;
+
+        for (let i = 2; i < tope; i++) {//alert(i+'--h: '+valBloque[b].huecos)
+            let nceld = 0;
+            for (let j = 0; j < grupos[i].length; j++) { //alert('b:'+b+'i'+i+'j'+j+' l: '+grupos[i].length+'\n'+JSON.stringify(grupos[i][j]))
                 /*if(j===0 && resul===0){//alert('entro')
                     resul=JSON.parse(JSON.stringify(grupos[i][j]))
                 }else{
@@ -1011,65 +1120,65 @@ const fijaNum = () => {
                 }*/
                 //alert(JSON.stringify(resul));
                 //if(resul.ns.length===resul.c.length)finalizado=true;
-                nceld+=grupos[i][j].c.length;
-                if(i===grupos[i][j].c.length){
-                    if(valBloque[b].huecos===i)ttt+='*'+i+'*';
-                    else ttt+='¡*'+i+'*!'
+                nceld += grupos[i][j].c.length;
+                if (i === grupos[i][j].c.length) {
+                    if (valBloque[b].huecos === i) ttt += '*' + i + '*';
+                    else ttt += '¡*' + i + '*!'
                 }
                 //let encontrados=[];
                 //let pendientes=[];
-                if (i===grupos[i][j].c.length) encontrados.push(grupos[i][j]);
-                else pendientes.push (grupos[i][j]);
+                if (i === grupos[i][j].c.length) encontrados.push(grupos[i][j]);
+                else pendientes.push(grupos[i][j]);
                 //if(finalizado)break;
             }
-            celdAcumCon+=nceld;
-            if(comienzo===0&&celdAcumCon>=i)comienzo=i;
-            if(inconceldas===0&&celdAcumCon>0)inconceldas=i
-            celdAcum[i]=celdAcumCon;
-            ttt+='num: '+i+'; celdas: '+nceld+'\n';
+            celdAcumCon += nceld;
+            if (comienzo === 0 && celdAcumCon >= i) comienzo = i;
+            if (inconceldas === 0 && celdAcumCon > 0) inconceldas = i
+            celdAcum[i] = celdAcumCon;
+            ttt += 'num: ' + i + '; celdas: ' + nceld + '\n';
             //if(finalizado)break;
         }
         //alert(ttt+'\n'+JSON.stringify(celdAcum)+'\n'+finalizado+'\n'+JSON.stringify(resul));
-        for(let i=0;i<pendientes.length;i++){
-            for(let j=i+1;j<pendientes.length;j++){
-                let ajuntar=true;
-                if(Number.isInteger(pendientes[i].c[0])){//alert('jjj')
-                    if(pendientes[j].lc[pendientes[i].c[0]]!==-1)ajuntar=false;
-                }else{
-                    let aux=pendientes[i].c[0];
-                    for(let k=0;k<pendientes[j].c.length;k++){
-                        let aux2=pendientes[j].c[k];
-                        if(aux[0]===aux2[0]&&aux[1]===aux2[1]){
-                            ajuntar=false;
-                            break; 
+        for (let i = 0; i < pendientes.length; i++) {
+            for (let j = i + 1; j < pendientes.length; j++) {
+                let ajuntar = true;
+                if (Number.isInteger(pendientes[i].c[0])) {//alert('jjj')
+                    if (pendientes[j].lc[pendientes[i].c[0]] !== -1) ajuntar = false;
+                } else {
+                    let aux = pendientes[i].c[0];
+                    for (let k = 0; k < pendientes[j].c.length; k++) {
+                        let aux2 = pendientes[j].c[k];
+                        if (aux[0] === aux2[0] && aux[1] === aux2[1]) {
+                            ajuntar = false;
+                            break;
                         }
                     }
                 }
-                if(ajuntar){
-                    resul=une(pendientes[j],pendientes[i]);
-                    if(resul.c.length===resul.ns.length)encontrados.push(resul);
+                if (ajuntar) {
+                    resul = une(pendientes[j], pendientes[i]);
+                    if (resul.c.length === resul.ns.length) encontrados.push(resul);
                     else {
-                        if(resul.lns.length<tope){
+                        if (resul.lns.length < tope) {
                             pendientes.push(resul);
                         }
                     }
                 }
-                if(j>10)alert('i: '+i+' j: '+j+'\n'+JSON.stringify(pendientes))
+                if (j > 10) alert('i: ' + i + ' j: ' + j + '\n' + JSON.stringify(pendientes))
             }
         }
-        encontrados.forEach(elem=>{
+        encontrados.forEach(elem => {
             [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach((c, ci) => {
-            if (elem.lc[ci] === -1) {
-                let celdas=valBloque[b].numeros[c].celdas;
-                //let celdas=tablero[c[0]][c[1]].posibles.numeros;
-                elem.ns.forEach(n => {
-                    if (celdas[n].estado === 'c') {
-                        fulminadas.push(celdas[n])
-                    }
-                })
-            }
+                if (elem.lc[ci] === -1) {
+                    let celdas = valBloque[b].numeros[c].celdas;
+                    //let celdas=tablero[c[0]][c[1]].posibles.numeros;
+                    elem.ns.forEach(n => {
+                        if (celdas[n].estado === 'c') {
+                            fulminadas.push(celdas[n])
+                        }
+                    })
+                }
             })
-        })       
+        })
 
     }
     //let lbaux = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
@@ -1090,10 +1199,10 @@ const fijaNum = () => {
     //alert(JSON.stringify(lbaux)+'\n'+JSON.stringify(baux)+'\G'+JSON.stringify(lbloques)+'\n'+JSON.stringify( bbloques))
 }
 
-let eliminadosExtra=[];
+let eliminadosExtra = [];
 const ponfijados = () => {
-    let deshace=false;
-    let causas='';
+    let deshace = false;
+    let causas = '';
     while (fijados.length > 0) {
         let caso = fijados.splice(0, 1)[0]
         for (let i = 0; i < fijados.length; i++) {
@@ -1107,11 +1216,11 @@ const ponfijados = () => {
         if (tablero[caso.f][caso.c].posibles.numeros[caso.v].estado === 'c')
             cierra(caso.v, caso.f, caso.c, 'f')
         else {
-            if(tablero[caso.f][caso.c].posibles.numeros[caso.v].estado === 'e'){//ya no se puede resolver
-            causas+='No es posible poner ' + caso.v + ' en [' + caso.f + ', ' + caso.c + ']\n';
-            //alert('No es posible poner ' + caso.v + ' en [' + caso.f + ', ' + caso.c + ']\n')
-            deshace=true;
-            break;
+            if (tablero[caso.f][caso.c].posibles.numeros[caso.v].estado === 'e') {//ya no se puede resolver
+                causas += 'No es posible poner ' + caso.v + ' en [' + caso.f + ', ' + caso.c + ']\n';
+                //alert('No es posible poner ' + caso.v + ' en [' + caso.f + ', ' + caso.c + ']\n')
+                deshace = true;
+                break;
             }
         }
         /*if(caso.b!==undefined){
@@ -1127,181 +1236,179 @@ const ponfijados = () => {
             } 
         }*/
     }
-    if(causas!==''){
-        alert(causas+'----\n');
-    /*if (deshace){ alert('entramos')*/
-        let aux=puestas.splice(puestas.length-1,1)[0][0]
-        
-        //alert('++entramos'+JSON.stringify(aux))
-        fijados=[];
-        posHistoria=puestas.length-1;
+    if (causas !== '') {
+        alert(causas + '----\n');
+        //deshacer();
+        let aux = puestas.splice(puestas.length - 1, 1)[0][0]
+        fijados = [];
+        posHistoria = puestas.length - 1;
         eliminadosExtra.push(aux);
         reGeneraHtml(posHistoria)
         //eliminaCelda(ce,ce.v,ce.f,ce.c,'si');
-        
+
         //cierra (PuestasAux[n][0].v, PuestasAux[n][0].f, PuestasAux[n][0].c, 's');
         //alert('fff')
         //alert('entramos++'+JSON.stringify(eliminadosExtra))   
     }
 }
 
-const muestraTablero=()=>{
+const muestraTablero = () => {
     //alert(JSON.stringify(tablero))
-    let ensayos=[[],[],[],[],[],[],[],[],[],[]];
-    let fil_N=[[],[],[],[],[],[],[],[],[]];
-    let col_N=[[],[],[],[],[],[],[],[],[]];
-    let blok_N=[[],[],[],[],[],[],[],[],[]];
+    let ensayos = [[], [], [], [], [], [], [], [], [], []];
+    let fil_N = [[], [], [], [], [], [], [], [], []];
+    let col_N = [[], [], [], [], [], [], [], [], []];
+    let blok_N = [[], [], [], [], [], [], [], [], []];
     //alert(JSON.stringify(ensayos))
     //let kk=[];
-    for(let i=0;i<9;i++)
-        for(let j=0;j<9;j++){
-            fil_N[i][j]=false;
-            col_N[i][j]=false;
-            blok_N[i][j]=false;
+    for (let i = 0; i < 9; i++)
+        for (let j = 0; j < 9; j++) {
+            fil_N[i][j] = false;
+            col_N[i][j] = false;
+            blok_N[i][j] = false;
         }
-        //alert(JSON.stringify(fil_N));
-        //alert(JSON.stringify(col_N));
-        //alert(JSON.stringify(blok_N));
-    for (let i=0;i<9;i++)
-        for(let j=0;j<9;j++){//if(i===0&&j===0)alert(i+' '+j)
-            if (tablero[i][j].valor===-1){
-                let itemEnsayo={};
-                itemEnsayo.f=i;
-                itemEnsayo.c=j;
-                itemEnsayo.b=bloques[i][j];
-                itemEnsayo.Vs=[];
-                tablero[i][j].posibles.numeros.forEach(celda=>{
-                    if(celda.estado==='c'){
+    //alert(JSON.stringify(fil_N));
+    //alert(JSON.stringify(col_N));
+    //alert(JSON.stringify(blok_N));
+    for (let i = 0; i < 9; i++)
+        for (let j = 0; j < 9; j++) {//if(i===0&&j===0)alert(i+' '+j)
+            if (tablero[i][j].valor === -1) {
+                let itemEnsayo = {};
+                itemEnsayo.f = i;
+                itemEnsayo.c = j;
+                itemEnsayo.b = bloques[i][j];
+                itemEnsayo.Vs = [];
+                tablero[i][j].posibles.numeros.forEach(celda => {
+                    if (celda.estado === 'c') {
                         itemEnsayo.Vs.push(celda.v)
                     }
                 })
                 desordena(itemEnsayo.Vs)
                 ensayos[tablero[i][j].posibles.n].push(itemEnsayo)
-            }else{
+            } else {
                 ensayos[1].push(tablero[i][j].posibles.numeros[tablero[i][j].valor]);
-                fil_N[i][tablero[i][j].valor]=true;
-                col_N[j][tablero[i][j].valor]=true;
-                blok_N[bloques[i][j]][tablero[i][j].valor]=true;
+                fil_N[i][tablero[i][j].valor] = true;
+                col_N[j][tablero[i][j].valor] = true;
+                blok_N[bloques[i][j]][tablero[i][j].valor] = true;
             }
             //if(i===8&&j===8){kk[3]=1;alert(i+' '+j); alert(JSON.stringify(kk))}
-    }
-    for (let i=2;i<ensayos.length;i++){
+        }
+    for (let i = 2; i < ensayos.length; i++) {
         desordena(ensayos[i]);
     }
     //alert(JSON.stringify(ensayos));
     //alert(JSON.stringify(fil_N));
     //alert(JSON.stringify(col_N));
     //alert(JSON.stringify(blok_N));  
-    let ensayo=[];
-    let puestos=ensayos[1].length;
-    for(let i=0;i<puestos;i++){
-        ensayo[i]=ensayos[1][i];
+    let ensayo = [];
+    let puestos = ensayos[1].length;
+    for (let i = 0; i < puestos; i++) {
+        ensayo[i] = ensayos[1][i];
     }
-    let ensayosL=[];
-    for(let i=2;i<10;i++){
-        for(let j=0;j<ensayos[i].length;j++){
+    let ensayosL = [];
+    for (let i = 2; i < 10; i++) {
+        for (let j = 0; j < ensayos[i].length; j++) {
             ensayosL.push(ensayos[i][j])
         }
     }
     //alert(JSON.stringify(ensayosL))
-    let puestosIni=puestos; 
-    let posEn=0;
-    let posVal=0;
-    let imposible=false;
-    let TEnsayos=[];
-    alert('+++\n'+JSON.stringify(ensayosL))
-    do{ //alert(puestos+'ll\n'+JSON.stringify(ensayo)+'--'+posEn+': '+JSON.stringify(ensayosL[posEn]));
-        let e=ensayosL[posEn];
-        
+    let puestosIni = puestos;
+    let posEn = 0;
+    let posVal = 0;
+    let imposible = false;
+    let TEnsayos = [];
+    alert('+++\n' + JSON.stringify(ensayosL))
+    do { //alert(puestos+'ll\n'+JSON.stringify(ensayo)+'--'+posEn+': '+JSON.stringify(ensayosL[posEn]));
+        let e = ensayosL[posEn];
+
         //alert(puestos);
         //alert(puestos+'ll'+imposible);
         //alert(JSON.stringify(e))
-       // alert('ss'+(!fil_N[e.f][e.Vs[posVal]]&&!col_N[e.c][e.Vs[posVal]]&&!blok_N[e.b][e.Vs[posVal]]))
-        if(!fil_N[e.f][e.Vs[posVal]]&&!col_N[e.c][e.Vs[posVal]]&&!blok_N[e.b][e.Vs[posVal]]){//se avanza
+        // alert('ss'+(!fil_N[e.f][e.Vs[posVal]]&&!col_N[e.c][e.Vs[posVal]]&&!blok_N[e.b][e.Vs[posVal]]))
+        if (!fil_N[e.f][e.Vs[posVal]] && !col_N[e.c][e.Vs[posVal]] && !blok_N[e.b][e.Vs[posVal]]) {//se avanza
             //alert('ss'+!fil_N[e.f][e.Vs[posVal]]&&!col_N[e.c][e.Vs[posVal]]&&!blok_N[e.b][e.Vs[posVal]])
-            ensayo[puestos++]={f:e.f,c:e.c,b:e.b,v:e.Vs[posVal],p:posVal};
-            fil_N[e.f][e.Vs[posVal]]=true;
-            col_N[e.c][e.Vs[posVal]]=true;
-            blok_N[e.b][e.Vs[posVal]]=true;
-            posVal=0;
+            ensayo[puestos++] = { f: e.f, c: e.c, b: e.b, v: e.Vs[posVal], p: posVal };
+            fil_N[e.f][e.Vs[posVal]] = true;
+            col_N[e.c][e.Vs[posVal]] = true;
+            blok_N[e.b][e.Vs[posVal]] = true;
+            posVal = 0;
             posEn++;
-        }else{ 
-            while(++posVal>=ensayosL[posEn].Vs.length){//marcha atras
-                if(--posEn<0){
-                    imposible=true;
+        } else {
+            while (++posVal >= ensayosL[posEn].Vs.length) {//marcha atras
+                if (--posEn < 0) {
+                    imposible = true;
                     break;
                 }
                 //alert(puestos+'pe'+posEn+'\n'+JSON.stringify(ensayo));
-                let e=ensayo[--puestos];
-                fil_N[e.f][e.v]=false;
-                col_N[e.c][e.v]=false;
-                blok_N[e.b][e.v]=false;
-                posVal=e.p
+                let e = ensayo[--puestos];
+                fil_N[e.f][e.v] = false;
+                col_N[e.c][e.v] = false;
+                blok_N[e.b][e.v] = false;
+                posVal = e.p
             }
             //alert(posEn+':'+ensayosL[posEn].Vs.length+'llll'+posVal+'puestos'+puestos+'\n'+JSON.stringify(ensayo))
         }
         //alert('---'+puestos)
-        if(puestos===81){//alert('entramos')
+        if (puestos === 81) {//alert('entramos')
             TEnsayos.push(JSON.stringify(ensayo));
-            let ee=ensayo[--puestos];
-            fil_N[ee.f][ee.v]=false;
-            col_N[ee.c][ee.v]=false;
-            blok_N[ee.b][ee.v]=false;
+            let ee = ensayo[--puestos];
+            fil_N[ee.f][ee.v] = false;
+            col_N[ee.c][ee.v] = false;
+            blok_N[ee.b][ee.v] = false;
             posEn--;
-            posVal=ee.p
+            posVal = ee.p
 
-            while(++posVal>=ensayosL[posEn].Vs.length){//marcha atras
-                if(--posEn<0){
-                    imposible=true;
+            while (++posVal >= ensayosL[posEn].Vs.length) {//marcha atras
+                if (--posEn < 0) {
+                    imposible = true;
                     break;
                 }
                 //alert(puestos+'pe'+posEn+'\n'+JSON.stringify(ensayo));
-                let e=ensayo[--puestos];
-                fil_N[e.f][e.v]=false;
-                col_N[e.c][e.v]=false;
-                blok_N[e.b][e.v]=false;
-                posVal=e.p
+                let e = ensayo[--puestos];
+                fil_N[e.f][e.v] = false;
+                col_N[e.c][e.v] = false;
+                blok_N[e.b][e.v] = false;
+                posVal = e.p
             }
         }
-    }while(/*puestos<81*/posEn<ensayosL.length&&!imposible)
-    alert('mmm'+TEnsayos.length);
-    alert('imposible: '+imposible+' se acaba'+puestos+'\n'+TEnsayos);
-    let DensayosL=JSON.parse(JSON.stringify(ensayosL));
-    for(let i=0;i<DensayosL.length;i++){//alert('se entra'+JSON.stringify(DensayosL))
-        let VVs=[];
-        for(let j=0;j<DensayosL[i].Vs.length;j++){//alert('mm')
-            let aux={v:DensayosL[i].Vs[j],n:0}
+    } while (/*puestos<81*/posEn < ensayosL.length && !imposible)
+    alert('mmm' + TEnsayos.length);
+    alert('imposible: ' + imposible + ' se acaba' + puestos + '\n' + TEnsayos);
+    let DensayosL = JSON.parse(JSON.stringify(ensayosL));
+    for (let i = 0; i < DensayosL.length; i++) {//alert('se entra'+JSON.stringify(DensayosL))
+        let VVs = [];
+        for (let j = 0; j < DensayosL[i].Vs.length; j++) {//alert('mm')
+            let aux = { v: DensayosL[i].Vs[j], n: 0 }
             VVs.push(aux)
         }
-        DensayosL[i].nV=0;
-        DensayosL[i].VVs=VVs;
+        DensayosL[i].nV = 0;
+        DensayosL[i].VVs = VVs;
     }
     alert(JSON.stringify(DensayosL));
-    for (let i=0;i<TEnsayos.length;i++){
-        for(let j=0;j<DensayosL.length;j++){//alert(i+'-'+j+'-----'+puestosIni+'\n'+JSON.stringify(TEnsayos[i])+'\n'+JSON.stringify(JSON.parse(TEnsayos[i])[puestosIni+j]))
-            let p=JSON.parse(TEnsayos[i])[puestosIni+j].p;//alert('-----'+p)
-            if(DensayosL[j].VVs[p].n++===0){
+    for (let i = 0; i < TEnsayos.length; i++) {
+        for (let j = 0; j < DensayosL.length; j++) {//alert(i+'-'+j+'-----'+puestosIni+'\n'+JSON.stringify(TEnsayos[i])+'\n'+JSON.stringify(JSON.parse(TEnsayos[i])[puestosIni+j]))
+            let p = JSON.parse(TEnsayos[i])[puestosIni + j].p;//alert('-----'+p)
+            if (DensayosL[j].VVs[p].n++ === 0) {
                 DensayosL[j].nV++;
             }
         }
     }
-    alert('+++\n'+JSON.stringify(DensayosL));
-    for(let i=0;i<DensayosL.length;i++){
+    alert('+++\n' + JSON.stringify(DensayosL));
+    for (let i = 0; i < DensayosL.length; i++) {
         //eliminaCelda(cel,ce.v,ce.f,ce.c);
-        if(DensayosL[i].nV===1){//fijamos
-            for(let j=0;j<DensayosL[i].VVs.length;j++){
-                if(DensayosL[i].VVs[j].n===1){
-                    let caso=tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v];
-                    if(caso.estado==='c')cierra(caso.v, caso.f, caso.c, 'f')
+        if (DensayosL[i].nV === 1) {//fijamos
+            for (let j = 0; j < DensayosL[i].VVs.length; j++) {
+                if (DensayosL[i].VVs[j].n === 1) {
+                    let caso = tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v];
+                    if (caso.estado === 'c') cierra(caso.v, caso.f, caso.c, 'f')
                 }
             }
             /*tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v].estado='f';
             tablero[DensayosL[i].f][[DensayosL[i].c]].valor=DensayosL[i].VVs[j].v;*/
-        }else{
-            for(let j=0;j<DensayosL[i].VVs.length;j++){
-                if(DensayosL[i].VVs[j].n===0){//eliminamos
-                    let caso=tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v];
-                    if(caso.estado==='c')eliminaCelda(caso,caso.v,caso.f,caso.c);
+        } else {
+            for (let j = 0; j < DensayosL[i].VVs.length; j++) {
+                if (DensayosL[i].VVs[j].n === 0) {//eliminamos
+                    let caso = tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v];
+                    if (caso.estado === 'c') eliminaCelda(caso, caso.v, caso.f, caso.c);
                 }
             }
         }
@@ -1310,24 +1417,24 @@ const muestraTablero=()=>{
         //    if(DensayosL[i].VVs[j].n===0){//eliminamos
         //        let caso=tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v];
         //            if(caso.estado==='c')eliminaCelda(caso,caso.v,caso.f,caso.c);
-                //tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v].estado='e';
-                              /*if(celda.estado==='c'){
-                        itemEnsayo.Vs.push(celda.v)
-                    }*/
+        //tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v].estado='e';
+        /*if(celda.estado==='c'){
+  itemEnsayo.Vs.push(celda.v)
+}*/
         //    }else{
         //        if(DensayosL[i].nV===1){//fijamos
         //            let caso=tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v];
         //            if(caso.estado==='c')cierra(caso.v, caso.f, caso.c, 'f')
-                    /*tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v].estado='f';
-                    tablero[DensayosL[i].f][[DensayosL[i].c]].valor=DensayosL[i].VVs[j].v;*/
+        /*tablero[DensayosL[i].f][[DensayosL[i].c]].posibles.numeros[DensayosL[i].VVs[j].v].estado='f';
+        tablero[DensayosL[i].f][[DensayosL[i].c]].valor=DensayosL[i].VVs[j].v;*/
         //        }
         //    }
         //}
-        
+
 
     }
     generaHtml()
-    
+
 
     /*tablero.forEach(elem=>{
         if(elem.valor===-1){
@@ -1348,12 +1455,137 @@ const muestraTablero=()=>{
 
 }
 
-const desordena=(vector)=>{
+const desordena = (vector) => {
     //let nuevo=[];
-    for (let i=0;i<vector.length;i++){
-        let n=Math.floor(vector.length*Math.random())
-        let a=vector[i];
-        vector[i]=vector[n];
-        vector[n]=a;
+    for (let i = 0; i < vector.length; i++) {
+        let n = Math.floor(vector.length * Math.random())
+        let a = vector[i];
+        vector[i] = vector[n];
+        vector[n] = a;
     }
+}
+
+
+const muestraTablero2 = () => {
+    //alert(JSON.stringify(tablero))
+    let ensayos = [[], [], [], [], [], [], [], [], [], []];
+    let fil_N = [[], [], [], [], [], [], [], [], []];
+    let col_N = [[], [], [], [], [], [], [], [], []];
+    let blok_N = [[], [], [], [], [], [], [], [], []];
+    //alert(JSON.stringify(ensayos))
+    //let kk=[];
+    for (let i = 0; i < 9; i++)
+        for (let j = 0; j < 9; j++) {
+            fil_N[i][j] = false;
+            col_N[i][j] = false;
+            blok_N[i][j] = false;
+        }
+    //alert(JSON.stringify(fil_N));
+    //alert(JSON.stringify(col_N));
+    //alert(JSON.stringify(blok_N));
+    for (let i = 0; i < 9; i++)
+        for (let j = 0; j < 9; j++) {//if(i===0&&j===0)alert(i+' '+j)
+            if (tablero[i][j].valor === -1) {
+                let itemEnsayo = {};
+                itemEnsayo.f = i;
+                itemEnsayo.c = j;
+                itemEnsayo.b = bloques[i][j];
+                itemEnsayo.Vs = [];
+                tablero[i][j].posibles.numeros.forEach(celda => {
+                    if (celda.estado === 'c') {
+                        itemEnsayo.Vs.push(celda.v)
+                    }
+                })
+                desordena(itemEnsayo.Vs)
+                ensayos[tablero[i][j].posibles.n].push(itemEnsayo)
+            } else {
+                ensayos[1].push(tablero[i][j].posibles.numeros[tablero[i][j].valor]);
+                fil_N[i][tablero[i][j].valor] = true;
+                col_N[j][tablero[i][j].valor] = true;
+                blok_N[bloques[i][j]][tablero[i][j].valor] = true;
+            }
+            //if(i===8&&j===8){kk[3]=1;alert(i+' '+j); alert(JSON.stringify(kk))}
+        }
+    for (let i = 2; i < ensayos.length; i++) {
+        desordena(ensayos[i]);
+    }
+    //alert(JSON.stringify(ensayos));
+    //alert(JSON.stringify(fil_N));
+    //alert(JSON.stringify(col_N));
+    //alert(JSON.stringify(blok_N));  
+    let ensayo = [];
+    let puestos = ensayos[1].length;
+    for (let i = 0; i < puestos; i++) {
+        ensayo[i] = ensayos[1][i];
+    }
+    let ensayosL = [];
+    for (let i = 2; i < 10; i++) {
+        for (let j = 0; j < ensayos[i].length; j++) {
+            ensayosL.push(ensayos[i][j])
+        }
+    }
+    //alert(JSON.stringify(ensayosL))
+    let puestosIni = puestos;
+    let posEn = 0;
+    let posVal = 0;
+    let imposible = false;
+    let TEnsayos = [];
+    alert('+++\n' + JSON.stringify(ensayosL))
+    do { //alert(puestos+'ll\n'+JSON.stringify(ensayo)+'--'+posEn+': '+JSON.stringify(ensayosL[posEn]));
+        let e = ensayosL[posEn];
+
+        //alert(puestos);
+        //alert(puestos+'ll'+imposible);
+        //alert(JSON.stringify(e))
+        // alert('ss'+(!fil_N[e.f][e.Vs[posVal]]&&!col_N[e.c][e.Vs[posVal]]&&!blok_N[e.b][e.Vs[posVal]]))
+        if (!fil_N[e.f][e.Vs[posVal]] && !col_N[e.c][e.Vs[posVal]] && !blok_N[e.b][e.Vs[posVal]]) {//se avanza
+            //alert('ss'+!fil_N[e.f][e.Vs[posVal]]&&!col_N[e.c][e.Vs[posVal]]&&!blok_N[e.b][e.Vs[posVal]])
+            ensayo[puestos++] = { f: e.f, c: e.c, b: e.b, v: e.Vs[posVal], p: posVal };
+            fil_N[e.f][e.Vs[posVal]] = true;
+            col_N[e.c][e.Vs[posVal]] = true;
+            blok_N[e.b][e.Vs[posVal]] = true;
+            posVal = 0;
+            posEn++;
+        } else {
+            while (++posVal >= ensayosL[posEn].Vs.length) {//marcha atras
+                if (--posEn < 0) {
+                    imposible = true;
+                    break;
+                }
+                //alert(puestos+'pe'+posEn+'\n'+JSON.stringify(ensayo));
+                let e = ensayo[--puestos];
+                fil_N[e.f][e.v] = false;
+                col_N[e.c][e.v] = false;
+                blok_N[e.b][e.v] = false;
+                posVal = e.p
+            }
+            //alert(posEn+':'+ensayosL[posEn].Vs.length+'llll'+posVal+'puestos'+puestos+'\n'+JSON.stringify(ensayo))
+        }
+        //alert('---'+puestos)
+        /*if (puestos === 81) {//alert('entramos')
+            TEnsayos.push(JSON.stringify(ensayo));
+            let ee = ensayo[--puestos];
+            fil_N[ee.f][ee.v] = false;
+            col_N[ee.c][ee.v] = false;
+            blok_N[ee.b][ee.v] = false;
+            posEn--;
+            posVal = ee.p
+
+            while (++posVal >= ensayosL[posEn].Vs.length) {//marcha atras
+                if (--posEn < 0) {
+                    imposible = true;
+                    break;
+                }
+                //alert(puestos+'pe'+posEn+'\n'+JSON.stringify(ensayo));
+                let e = ensayo[--puestos];
+                fil_N[e.f][e.v] = false;
+                col_N[e.c][e.v] = false;
+                blok_N[e.b][e.v] = false;
+                posVal = e.p
+            }
+        }*/
+    }while (puestos<81&&!imposible) 
+    //while (/*puestos<81*/posEn < ensayosL.length && !imposible)
+    alert('mmm' + TEnsayos.length);
+    alert('imposible: ' + imposible + ' se acaba' + puestos + '\n' + JSON.stringify(ensayo));
 }
