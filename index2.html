@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>-->
+    <!--<script type="text/javascript" src="./jsPDF/jspdf.umd.min.js"></script>-->
+    <script type="text/javascript" src="./jsPDF-1.3.2/dist/jspdf.debug.js"></script>
+    <!--<script type="text/javascript" src="../dist/jspdf.debug.js"></script>-->
+    <script src="tablero.js"></script>
+    <script src="sudokupdf.js"></script>
+    <title>Generar PDF con recuadros 9x9</title>
+</head>
+
+<body onmousemove="obtenerCoordenadas(event)">
+    <h1>Generador de Sudokus</h1>
+    <label for="miInput">Caracteres del sudoku:</label>
+    <input type="text" id="miInput" name="miInput" value="123456789">
+    <label for="miSelect">casillas extra sobre el mínimo del sudoku:</label>
+    <select id="miSelect">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+        <option value="12">12</option>
+        <option value="13">13</option>
+        <option value="14">14</option>
+        <option value="15">15</option>
+    </select>
+
+        <div id="cuerpo"></div>
+        <span id="cuerpo0"></span><span id="cuerpo1"></span><span id="cuerpo2"></span>
+        <span id="cuerpo3"></span><span id="cuerpo4"></span><span id="cuerpo5"></span>
+        <input type="file" id="archivoInput">
+        <button onclick="cargarArchivo()">Cargar Archivo</button>
+        <div id="contenidoArchivo"></div>
+        <!--<textarea id="contenido" rows="10" cols="50"></textarea><br>-->
+        <button onclick="guardarArchivo(HistPuestas)">Guardar Archivo</button>
+        <div id="historial"></div>
+        <button onclick="reGeneraHtml()">Rehace</button>
+        <button onclick="muestraTablero()">Tablero</button>
+        <button onclick="muestraTablero2()">Tablero2</button>
+        <button onclick="muestraTablero3()">Tablero3</button> 
+        <button onclick="ResuelveBruta()">Resuelve</button>
+        <!--<div id="sudoku-container"></div>-->
+        <button onclick="ponCaracteres();tableroNuevo()">Generar nuevo Sudoku</button><br>
+        <button onclick="deshacer()">deshacer</button>
+        <button onclick="generarPDF()">Generar PDF</button>
+        <button onclick="generar6Pdf()">Generar Hoja PDF con 6 sudokus</button>
+        <button onclick="generaAlAzar()">Generar al azar</button>
+
+
+        <div id="ddiv"
+            style="position: absolute;background-color: #ccc;padding: 10px; border: 1px solid #000; display: none;">
+        </div>
+
+
+
+
+
+
+
+        <script>
+            
+        </script>
+
+</body>
+
+</html>
