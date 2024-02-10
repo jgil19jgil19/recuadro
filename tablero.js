@@ -1579,6 +1579,7 @@ const ponfijados = () => {
 
 
 const muestraTablero = () => {
+    let nSudokuCuad=nSudoku*nSudoku;
     //alert(JSON.stringify(tablero))
     let ensayos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
     let fil_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
@@ -1674,7 +1675,7 @@ const muestraTablero = () => {
             //alert(posEn+':'+ensayosL[posEn].Vs.length+'llll'+posVal+'puestos'+puestos+'\n'+JSON.stringify(ensayo))
         }
         //alert('---'+puestos)
-        if (puestos === nSudoku*nSudoku) {//alert('entramos')
+        if (puestos === nSudokuCuad) {//alert('entramos')
             TEnsayos.push(JSON.stringify(ensayo));
             let ee = ensayo[--puestos];
             fil_N[ee.f][ee.v] = false;
@@ -1793,6 +1794,7 @@ const desordena = (vector) => {
 
 
 const muestraTablero2 = () => {
+    let nSudokuCuad=nSudoku*nSudoku;
     //alert(JSON.stringify(tablero))
     let ensayos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
     let fil_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
@@ -1910,13 +1912,14 @@ const muestraTablero2 = () => {
                 posVal = e.p
             }
         }*/
-    } while (puestos < nSudoku*nSudoku && !imposible)
+    } while (puestos < nSudokuCuad && !imposible)
     //while (/*puestos<81*/posEn < ensayosL.length && !imposible)
     alert('mmm' + TEnsayos.length);
     alert('imposible: ' + imposible + ' se acaba' + puestos + '\n' + JSON.stringify(ensayo));
 }
 
 const muestraTablero3 = () => {
+    let nSudokuCuad=nSudoku*nSudoku;
     //alert(JSON.stringify(tablero))
     let ensayos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
     let fil_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
@@ -2013,7 +2016,7 @@ const muestraTablero3 = () => {
             //alert(posEn+':'+ensayosL[posEn].Vs.length+'llll'+posVal+'puestos'+puestos+'\n'+JSON.stringify(ensayo))
         }
         //alert('---'+puestos)
-        if (puestos === nSudoku*nSudoku) {//alert('entramos')
+        if (puestos === nSudokuCuad) {//alert('entramos')
             TEnsayos.push(JSON.stringify(ensayo));
             let ee = ensayo[--puestos];
             fil_N[ee.f][ee.v] = false;
