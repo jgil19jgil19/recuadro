@@ -2,12 +2,12 @@ let caracteres = ['9', '1', '2', '3', '4', '5', '6', '7', '8'];
 const ponCaracteres = () => {
     let mios = document.getElementById('miInput').value;
     let aux = [];
-    if (mios.length < 9) {
-        alert('Debe tener nueve caracteres');
+    if (mios.length < nSudoku) {
+        alert('Debe tener '+nSudoku+' caracteres');
         throw new Error('Debe tener nueve caracteres');
     }
     //alert(''+document.getElementById('miInput').value.length)
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < nSudoku; i++) {
         let ch = mios.substring(i, i + 1);
         //alert(''+ch)
         aux.forEach(a => {
@@ -93,11 +93,11 @@ function generarPDF() {
     //let caracteres=['A','B','C','D','E','F','G','H','I'];
     let sudoku = [[{ v: 8, f: 0, c: 0, b: 0, estado: 's' }], [{ v: 3, f: 1, c: 2, b: 0, estado: 's' }], [{ v: 7, f: 2, c: 1, b: 0, estado: 's' }], [{ v: 6, f: 1, c: 3, b: 1, estado: 's' }], [{ v: 0, f: 2, c: 4, b: 1, estado: 's' }], [{ v: 2, f: 2, c: 6, b: 2, estado: 's' }], [{ v: 5, f: 3, c: 1, b: 3, estado: 's' }], [{ v: 1, f: 5, c: 3, b: 4, estado: 's' }], [{ v: 4, f: 4, c: 4, b: 4, estado: 's' }], [{ v: 5, f: 4, c: 5, b: 4, estado: 's' }], [{ v: 7, f: 3, c: 5, b: 4, estado: 's' }], [{ v: 7, f: 4, c: 6, b: 5, estado: 's' }], [{ v: 3, f: 5, c: 7, b: 5, estado: 's' }], [{ v: 1, f: 6, c: 2, b: 6, estado: 's' }], [{ v: 8, f: 7, c: 2, b: 6, estado: 's' }], [{ v: 0, f: 8, c: 1, b: 6, estado: 's' }], [{ v: 5, f: 7, c: 3, b: 7, estado: 's' }], [{ v: 4, f: 8, c: 6, b: 8, estado: 's' }], [{ v: 1, f: 7, c: 7, b: 8, estado: 's' }], [{ v: 6, f: 6, c: 7, b: 8, estado: 's' }], [{ v: 8, f: 6, c: 8, b: 8, estado: 's' }], [{ v: 0, f: 0, c: 8, b: 2, estado: 's' }, { v: 0, f: 1, c: 0, b: 0, estado: 'f' }], [{ v: 1, f: 8, c: 4, b: 7, estado: 's' }], [{ v: 1, f: 3, c: 0, b: 3, estado: 's' }, { v: 1, f: 2, c: 5, b: 1, estado: 'f' }, { v: 1, f: 0, c: 1, b: 0, estado: 'f' }, { v: 1, f: 4, c: 8, b: 5, estado: 'f' }, { v: 1, f: 1, c: 6, b: 2, estado: 'f' }], [{ v: 2, f: 5, c: 0, b: 3, estado: 's' }, { v: 7, f: 5, c: 2, b: 3, estado: 'f' }, { v: 0, f: 5, c: 5, b: 4, estado: 'f' }, { v: 0, f: 6, c: 3, b: 7, estado: 'f' }, { v: 0, f: 7, c: 6, b: 8, estado: 'f' }], [{ v: 8, f: 8, c: 5, b: 7, estado: 's' }, { v: 2, f: 1, c: 5, b: 1, estado: 'f' }, { v: 6, f: 7, c: 5, b: 7, estado: 'f' }, { v: 6, f: 4, c: 1, b: 3, estado: 'f' }, { v: 4, f: 6, c: 5, b: 7, estado: 'f' }, { v: 3, f: 0, c: 5, b: 1, estado: 'f' }, { v: 3, f: 2, c: 8, b: 2, estado: 'f' }, { v: 3, f: 4, c: 0, b: 3, estado: 'f' }, { v: 0, f: 4, c: 2, b: 3, estado: 'f' }, { v: 8, f: 5, c: 1, b: 3, estado: 'f' }, { v: 4, f: 5, c: 8, b: 5, estado: 'f' }, { v: 4, f: 3, c: 2, b: 3, estado: 'f' }, { v: 6, f: 0, c: 6, b: 2, estado: 'f' }, { v: 3, f: 6, c: 6, b: 8, estado: 'f' }, { v: 3, f: 8, c: 3, b: 7, estado: 'f' }, { v: 3, f: 7, c: 1, b: 6, estado: 'f' }, { v: 3, f: 3, c: 4, b: 4, estado: 'f' }, { v: 6, f: 3, c: 8, b: 5, estado: 'f' }, { v: 5, f: 6, c: 0, b: 6, estado: 'f' }, { v: 5, f: 5, c: 6, b: 5, estado: 'f' }, { v: 7, f: 0, c: 3, b: 1, estado: 'f' }, { v: 6, f: 5, c: 4, b: 4, estado: 'f' }, { v: 8, f: 1, c: 4, b: 1, estado: 'f' }, { v: 4, f: 7, c: 0, b: 6, estado: 'f' }, { v: 5, f: 0, c: 4, b: 1, estado: 'f' }, { v: 4, f: 2, c: 3, b: 1, estado: 'f' }, { v: 8, f: 2, c: 7, b: 2, estado: 'f' }, { v: 4, f: 1, c: 1, b: 0, estado: 'f' }, { v: 2, f: 6, c: 1, b: 6, estado: 'f' }, { v: 2, f: 0, c: 2, b: 0, estado: 'f' }, { v: 6, f: 8, c: 2, b: 6, estado: 'f' }, { v: 2, f: 8, c: 8, b: 8, estado: 'f' }, { v: 7, f: 6, c: 4, b: 7, estado: 'f' }, { v: 2, f: 7, c: 4, b: 7, estado: 'f' }, { v: 7, f: 7, c: 8, b: 8, estado: 'f' }, { v: 6, f: 2, c: 0, b: 0, estado: 'f' }, { v: 4, f: 0, c: 7, b: 2, estado: 'f' }, { v: 5, f: 2, c: 2, b: 0, estado: 'f' }, { v: 8, f: 4, c: 3, b: 4, estado: 'f' }, { v: 8, f: 3, c: 6, b: 5, estado: 'f' }, { v: 2, f: 3, c: 3, b: 4, estado: 'f' }, { v: 0, f: 3, c: 7, b: 5, estado: 'f' }, { v: 2, f: 4, c: 7, b: 5, estado: 'f' }, { v: 7, f: 8, c: 0, b: 6, estado: 'f' }, { v: 5, f: 8, c: 7, b: 8, estado: 'f' }, { v: 7, f: 1, c: 7, b: 2, estado: 'f' }, { v: 5, f: 1, c: 8, b: 2, estado: 'f' }]]
     sudoku = JSON.parse(JSON.stringify(puestas));
-    let cuadSudoku = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    let cuadSudoku = GeneraCuadroEspacios(nSudoku);/*[[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']];
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']];*/
     let solSudoku = JSON.parse(JSON.stringify(cuadSudoku))
     //alert(cuadSudoku)
     let fijados = [];
@@ -126,12 +126,12 @@ function generarPDF() {
     })
 
 
-    cuadro(pdf, 10, 20, 9, 9, .5, 10, cuadSudoku);
-    cuadro(pdf, 120, 20, 9, 9, .5, 10, solSudoku);
+    cuadro(pdf, 10, 20, 9, nSudoku, .5, 10, cuadSudoku);
+    cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, solSudoku);
 
-    cuadro(pdf, 10, 110, 9, 9, .5, 10, cuadSudoku);
-    cuadro(pdf, 10, 200, 9, 9, .5, 10, cuadSudoku);
-
+    cuadro(pdf, 10, 110, 9, nSudoku, .5, 10, cuadSudoku);
+    cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, cuadSudoku);
+    9
 
     // Guarda el PDF con un nombre específico
     pdf.save('recuadros_9x9.pdf');

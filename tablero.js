@@ -1,6 +1,48 @@
-let tablero = [[], [], [], [], [], [], [], [], []];
+let nSudoku=9;
+const generaMenosUnos=(n)=>{
+    let elem=[];
+    for(let i=0;i<n;i++){
+        elem.push(-1)
+    }
+    return elem;
+}
+const generaCeros=(n)=>{
+    let elem=[];
+    for(let i=0;i<n;i++){
+        elem.push(0)
+    }
+    return elem;
+}
+const generaConjuntosVacios=(n)=>{
+    let elem=[];
+    for(let i=0;i<n;i++){
+        elem.push([]);
+    }
+    return elem;
+}
+
+const GeneraCuadroEspacios = (n)=>{
+    let res=[]
+    for(let i=0;i<n;i++){
+        res.push([]);
+        for(let j=0; j<n;j++){
+            res[i].push(' ')
+        }
+    }
+    return res;
+}
+
+const GeneraNumerosSeg=(n)=>{
+    let res=[]
+    for(let i=0;i<n;i++){
+        res.push(i)
+    }
+    return res;
+}
+
+let tablero = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
 //alert('oo')
-let bloques = [[], [], [], [], [], [], [], [], []];
+let bloques = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
 let casillasBloque = [];
 let filas = [];
 let columnas = [];
@@ -10,14 +52,14 @@ let numeros = [];
 const ponCasillas = (patron) => {//alert(patron)
     if (!patron) {//alert('nnn')
         let b = 0;
-        for (let i = 0; i < 9; i++) {//alert(i)
-            let auxi = Math.floor(i / 3);
-            for (let j = 0; j < 9; j++) {
-                let auxj = Math.floor(j / 3);
+        for (let i = 0; i < nSudoku; i++) {//alert(i)
+            let auxi = Math.floor(i / Math.sqrt(nSudoku));
+            for (let j = 0; j < nSudoku; j++) {
+                let auxj = Math.floor(j / Math.sqrt(nSudoku));
                 //alert(auxi+'-'+auxj+'='+(3*auxi+auxj)+' ll '+casillasBloque[3*auxi+auxj])
-                if (!casillasBloque[3 * auxi + auxj]) casillasBloque[3 * auxi + auxj] = [];
-                casillasBloque[3 * auxi + auxj].push([i, j]);
-                bloques[i][j] = 3 * auxi + auxj;
+                if (!casillasBloque[Math.sqrt(nSudoku) * auxi + auxj]) casillasBloque[Math.sqrt(nSudoku) * auxi + auxj] = [];
+                casillasBloque[Math.sqrt(nSudoku) * auxi + auxj].push([i, j]);
+                bloques[i][j] = Math.sqrt(nSudoku) * auxi + auxj;
             }
         }
     }
@@ -32,26 +74,26 @@ let puestas = [];
 let quedan = [];
 let quedanN = 0;
 const ponTablero = () => {
-    for (let i = 0; i < 9; i++) {
-        filas[i] = { huecos: 9, numeros: [] }
-        columnas[i] = { huecos: 9, numeros: [] }
-        valBloque[i] = { huecos: 9, numeros: [] }
-        numeros[i] = { n: 9, filas: [] }
-        for (let ii = 0; ii < 9; ii++) {
-            filas[i].numeros.push({ v: ii, q: 9, celdas: [] })
-            columnas[i].numeros.push({ v: ii, q: 9, celdas: [] })
-            valBloque[i].numeros.push({ v: ii, q: 9, celdas: [] })
-            numeros[i].filas.push({ f: ii, q: 9, col: [] })
+    for (let i = 0; i < nSudoku; i++) {
+        filas[i] = { huecos: nSudoku, numeros: [] }
+        columnas[i] = { huecos: nSudoku, numeros: [] }
+        valBloque[i] = { huecos: nSudoku, numeros: [] }
+        numeros[i] = { n: nSudoku, filas: [] }
+        for (let ii = 0; ii < nSudoku; ii++) {
+            filas[i].numeros.push({ v: ii, q: nSudoku, celdas: [] })
+            columnas[i].numeros.push({ v: ii, q: nSudoku, celdas: [] })
+            valBloque[i].numeros.push({ v: ii, q: nSudoku, celdas: [] })
+            numeros[i].filas.push({ f: ii, q: nSudoku, col: [] })
 
         }
     }
     //let iaux=-1;
-    for (let i = 0; i < 9; i++) {
-        for (let j = 0; j < 9; j++) {
-            tablero[i][j] = { valor: -1, posibles: { n: 9, numeros: [] } }
+    for (let i = 0; i < nSudoku; i++) {
+        for (let j = 0; j < nSudoku; j++) {
+            tablero[i][j] = { valor: -1, posibles: { n: nSudoku, numeros: [] } }
 
-            for (let k = 0; k < 9; k++) {
-                let celda = { v: k, f: i, c: j, b: bloques[i][j], estado: 'c', pos: [9 * 9 * i + 9 * j + k] }
+            for (let k = 0; k < nSudoku; k++) {
+                let celda = { v: k, f: i, c: j, b: bloques[i][j], estado: 'c', pos: [nSudoku * nSudoku * i + nSudoku * j + k] }
                 tablero[i][j].posibles.numeros.push(celda);
 
                 filas[i].numeros[k].celdas.push(celda);
@@ -67,23 +109,24 @@ const ponTablero = () => {
 
 const generar6Pdf = () => {
     let tanda = [];
-    let sudoku = [[{ v: 8, f: 0, c: 0, b: 0, estado: 's' }], [{ v: 3, f: 1, c: 2, b: 0, estado: 's' }], [{ v: 7, f: 2, c: 1, b: 0, estado: 's' }], [{ v: 6, f: 1, c: 3, b: 1, estado: 's' }], [{ v: 0, f: 2, c: 4, b: 1, estado: 's' }], [{ v: 2, f: 2, c: 6, b: 2, estado: 's' }], [{ v: 5, f: 3, c: 1, b: 3, estado: 's' }], [{ v: 1, f: 5, c: 3, b: 4, estado: 's' }], [{ v: 4, f: 4, c: 4, b: 4, estado: 's' }], [{ v: 5, f: 4, c: 5, b: 4, estado: 's' }], [{ v: 7, f: 3, c: 5, b: 4, estado: 's' }], [{ v: 7, f: 4, c: 6, b: 5, estado: 's' }], [{ v: 3, f: 5, c: 7, b: 5, estado: 's' }], [{ v: 1, f: 6, c: 2, b: 6, estado: 's' }], [{ v: 8, f: 7, c: 2, b: 6, estado: 's' }], [{ v: 0, f: 8, c: 1, b: 6, estado: 's' }], [{ v: 5, f: 7, c: 3, b: 7, estado: 's' }], [{ v: 4, f: 8, c: 6, b: 8, estado: 's' }], [{ v: 1, f: 7, c: 7, b: 8, estado: 's' }], [{ v: 6, f: 6, c: 7, b: 8, estado: 's' }], [{ v: 8, f: 6, c: 8, b: 8, estado: 's' }], [{ v: 0, f: 0, c: 8, b: 2, estado: 's' }, { v: 0, f: 1, c: 0, b: 0, estado: 'f' }], [{ v: 1, f: 8, c: 4, b: 7, estado: 's' }], [{ v: 1, f: 3, c: 0, b: 3, estado: 's' }, { v: 1, f: 2, c: 5, b: 1, estado: 'f' }, { v: 1, f: 0, c: 1, b: 0, estado: 'f' }, { v: 1, f: 4, c: 8, b: 5, estado: 'f' }, { v: 1, f: 1, c: 6, b: 2, estado: 'f' }], [{ v: 2, f: 5, c: 0, b: 3, estado: 's' }, { v: 7, f: 5, c: 2, b: 3, estado: 'f' }, { v: 0, f: 5, c: 5, b: 4, estado: 'f' }, { v: 0, f: 6, c: 3, b: 7, estado: 'f' }, { v: 0, f: 7, c: 6, b: 8, estado: 'f' }], [{ v: 8, f: 8, c: 5, b: 7, estado: 's' }, { v: 2, f: 1, c: 5, b: 1, estado: 'f' }, { v: 6, f: 7, c: 5, b: 7, estado: 'f' }, { v: 6, f: 4, c: 1, b: 3, estado: 'f' }, { v: 4, f: 6, c: 5, b: 7, estado: 'f' }, { v: 3, f: 0, c: 5, b: 1, estado: 'f' }, { v: 3, f: 2, c: 8, b: 2, estado: 'f' }, { v: 3, f: 4, c: 0, b: 3, estado: 'f' }, { v: 0, f: 4, c: 2, b: 3, estado: 'f' }, { v: 8, f: 5, c: 1, b: 3, estado: 'f' }, { v: 4, f: 5, c: 8, b: 5, estado: 'f' }, { v: 4, f: 3, c: 2, b: 3, estado: 'f' }, { v: 6, f: 0, c: 6, b: 2, estado: 'f' }, { v: 3, f: 6, c: 6, b: 8, estado: 'f' }, { v: 3, f: 8, c: 3, b: 7, estado: 'f' }, { v: 3, f: 7, c: 1, b: 6, estado: 'f' }, { v: 3, f: 3, c: 4, b: 4, estado: 'f' }, { v: 6, f: 3, c: 8, b: 5, estado: 'f' }, { v: 5, f: 6, c: 0, b: 6, estado: 'f' }, { v: 5, f: 5, c: 6, b: 5, estado: 'f' }, { v: 7, f: 0, c: 3, b: 1, estado: 'f' }, { v: 6, f: 5, c: 4, b: 4, estado: 'f' }, { v: 8, f: 1, c: 4, b: 1, estado: 'f' }, { v: 4, f: 7, c: 0, b: 6, estado: 'f' }, { v: 5, f: 0, c: 4, b: 1, estado: 'f' }, { v: 4, f: 2, c: 3, b: 1, estado: 'f' }, { v: 8, f: 2, c: 7, b: 2, estado: 'f' }, { v: 4, f: 1, c: 1, b: 0, estado: 'f' }, { v: 2, f: 6, c: 1, b: 6, estado: 'f' }, { v: 2, f: 0, c: 2, b: 0, estado: 'f' }, { v: 6, f: 8, c: 2, b: 6, estado: 'f' }, { v: 2, f: 8, c: 8, b: 8, estado: 'f' }, { v: 7, f: 6, c: 4, b: 7, estado: 'f' }, { v: 2, f: 7, c: 4, b: 7, estado: 'f' }, { v: 7, f: 7, c: 8, b: 8, estado: 'f' }, { v: 6, f: 2, c: 0, b: 0, estado: 'f' }, { v: 4, f: 0, c: 7, b: 2, estado: 'f' }, { v: 5, f: 2, c: 2, b: 0, estado: 'f' }, { v: 8, f: 4, c: 3, b: 4, estado: 'f' }, { v: 8, f: 3, c: 6, b: 5, estado: 'f' }, { v: 2, f: 3, c: 3, b: 4, estado: 'f' }, { v: 0, f: 3, c: 7, b: 5, estado: 'f' }, { v: 2, f: 4, c: 7, b: 5, estado: 'f' }, { v: 7, f: 8, c: 0, b: 6, estado: 'f' }, { v: 5, f: 8, c: 7, b: 8, estado: 'f' }, { v: 7, f: 1, c: 7, b: 2, estado: 'f' }, { v: 5, f: 1, c: 8, b: 2, estado: 'f' }]]
-
+    let sudoku = []
 
     //alert(cuadSudoku)
     //adicionales
     let adicionales = +document.getElementById('miSelect').value;
-
+    nSudoku=9;
+    //ponCaracteres();tableroNuevo();
+    document.getElementById('tipo').value=nSudoku;
 
     for (let i = 0; i < 6; i++) {
         generaAlAzar();
         //alert('vamos por el sudoku: '+i)
         let fijados = [];
-        let cuadSudoku = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        let cuadSudoku = GeneraCuadroEspacios(nSudoku);/* [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']];
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']];*/
         let solSudoku = JSON.parse(JSON.stringify(cuadSudoku))
         sudoku = JSON.parse(JSON.stringify(puestas));
         sudoku.forEach(el => {
@@ -113,36 +156,154 @@ const generar6Pdf = () => {
     }
     //alert('kkk'+adicionales)
     let pdf = new jsPDF();
-    cuadro(pdf, 10, 20, 9, 9, .5, 10, JSON.parse(tanda[0].problema));
-    cuadro(pdf, 120, 20, 9, 9, .5, 10, JSON.parse(tanda[1].problema));
+    cuadro(pdf, 10, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[0].problema));
+    cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[1].problema));
 
-    cuadro(pdf, 10, 110, 9, 9, .5, 10, JSON.parse(tanda[2].problema));
-    cuadro(pdf, 120, 110, 9, 9, .5, 10, JSON.parse(tanda[3].problema));
+    cuadro(pdf, 10, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[2].problema));
+    cuadro(pdf, 120, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[3].problema));
 
-    cuadro(pdf, 10, 200, 9, 9, .5, 10, JSON.parse(tanda[4].problema));
-    cuadro(pdf, 120, 200, 9, 9, .5, 10, JSON.parse(tanda[5].problema));
+    cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[4].problema));
+    cuadro(pdf, 120, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[5].problema));
 
     pdf.addPage();
 
     pdf.text('SOLUCIONES', 90, 10);
 
-    cuadro(pdf, 10, 20, 9, 9, .5, 10, JSON.parse(tanda[0].solucion));
-    cuadro(pdf, 120, 20, 9, 9, .5, 10, JSON.parse(tanda[1].solucion));
+    cuadro(pdf, 10, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[0].solucion));
+    cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[1].solucion));
 
-    cuadro(pdf, 10, 110, 9, 9, .5, 10, JSON.parse(tanda[2].solucion));
-    cuadro(pdf, 120, 110, 9, 9, .5, 10, JSON.parse(tanda[3].solucion));
+    cuadro(pdf, 10, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[2].solucion));
+    cuadro(pdf, 120, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[3].solucion));
 
-    cuadro(pdf, 10, 200, 9, 9, .5, 10, JSON.parse(tanda[4].solucion));
-    cuadro(pdf, 120, 200, 9, 9, .5, 10, JSON.parse(tanda[5].solucion));
+    cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[4].solucion));
+    cuadro(pdf, 120, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[5].solucion));
     // Guarda el PDF con un nombre específico
     pdf.save('Hojas6pdfs.pdf');
+}
+
+const generar24Pdf = () => {
+    let tanda = [];
+    let sudoku = []
+
+    //alert(cuadSudoku)
+    //adicionales
+    let adicionales = +document.getElementById('miSelect2').value;
+    nSudoku=4;
+    //ponCaracteres();tableroNuevo();
+    document.getElementById('tipo').value=nSudoku;
+
+
+    for (let i = 0; i < 24; i++) {
+        generaAlAzar();
+        //alert('vamos por el sudoku: '+i)
+        let fijados = [];
+        let cuadSudoku = GeneraCuadroEspacios(nSudoku);/* [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']];*/
+        let solSudoku = JSON.parse(JSON.stringify(cuadSudoku))
+        sudoku = JSON.parse(JSON.stringify(puestas));
+        sudoku.forEach(el => {
+            cuadSudoku[el[0].f][el[0].c] = caracteres[el[0].v]
+            /*if (el[0].v === 0) cuadSudoku[el[0].f][el[0].c] = '9'
+            else cuadSudoku[el[0].f][el[0].c] = '' + el[0].v;*/
+            el.forEach((it, i) => {
+                if (i > 0) fijados.push(it);
+            })
+        })
+
+        for (let i = 0; i < adicionales; i++) {
+            let aux = Math.floor(fijados.length * Math.random());
+            let kk = fijados.splice(aux, 1);
+            cuadSudoku[kk[0].f][kk[0].c] = caracteres[kk[0].v]
+            /*if (kk[0].v === 0) cuadSudoku[kk[0].f][kk[0].c] = '9'
+            else cuadSudoku[kk[0].f][kk[0].c] = '' + kk[0].v;*/
+        }
+        //generamos el cuadro solución
+        fijados.forEach(fj => {
+            solSudoku[fj.f][fj.c] = caracteres[fj.v];
+            /*if(fj.v===0)solSudoku[fj.f][fj.c]='9'
+            else solSudoku[fj.f][fj.c]=''+fj.v;*/
+        })
+
+        tanda.push({ problema: JSON.stringify(cuadSudoku), solucion: JSON.stringify(solSudoku) })
+    }
+    //alert('kkk'+adicionales)
+    let pdf = new jsPDF();
+    cuadro(pdf, 10, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[0].problema));
+    cuadro(pdf, 56, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[1].problema));
+    cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[2].problema));
+    cuadro(pdf, 166, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[3].problema));
+
+    cuadro(pdf, 10, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[4].problema));
+    cuadro(pdf, 56, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[5].problema));
+    cuadro(pdf, 120, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[6].problema));
+    cuadro(pdf, 166, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[7].problema));
+
+    cuadro(pdf, 10, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[8].problema));
+    cuadro(pdf, 56, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[9].problema));
+    cuadro(pdf, 120, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[10].problema));
+    cuadro(pdf, 166, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[11].problema));
+
+    cuadro(pdf, 10, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[12].problema));
+    cuadro(pdf, 56, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[13].problema));
+    cuadro(pdf, 120, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[14].problema));
+    cuadro(pdf, 166, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[15].problema));
+
+    cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[16].problema));
+    cuadro(pdf, 56, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[17].problema));
+    cuadro(pdf, 120, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[18].problema));
+    cuadro(pdf, 166, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[19].problema));
+
+    cuadro(pdf, 10, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[20].problema));
+    cuadro(pdf, 56, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[21].problema));
+    cuadro(pdf, 120, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[22].problema));
+    cuadro(pdf, 166, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[23].problema));
+
+    pdf.addPage();
+
+    pdf.text('SOLUCIONES', 90, 10);
+
+    //cuadro(pdf, 10, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[0].solucion));
+    cuadro(pdf, 10, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[0].solucion));
+    cuadro(pdf, 56, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[1].solucion));
+    cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[2].solucion));
+    cuadro(pdf, 166, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[3].solucion));
+
+    cuadro(pdf, 10, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[4].solucion));
+    cuadro(pdf, 56, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[5].solucion));
+    cuadro(pdf, 120, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[6].solucion));
+    cuadro(pdf, 166, 66, 9, nSudoku, .5, 10, JSON.parse(tanda[7].solucion));
+
+    cuadro(pdf, 10, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[8].solucion));
+    cuadro(pdf, 56, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[9].solucion));
+    cuadro(pdf, 120, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[10].solucion));
+    cuadro(pdf, 166, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[11].solucion));
+
+    cuadro(pdf, 10, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[12].solucion));
+    cuadro(pdf, 56, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[13].solucion));
+    cuadro(pdf, 120, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[14].solucion));
+    cuadro(pdf, 166, 156, 9, nSudoku, .5, 10, JSON.parse(tanda[15].solucion));
+
+    cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[16].solucion));
+    cuadro(pdf, 56, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[17].solucion));
+    cuadro(pdf, 120, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[18].solucion));
+    cuadro(pdf, 166, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[19].solucion));
+
+    cuadro(pdf, 10, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[20].solucion));
+    cuadro(pdf, 56, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[21].solucion));
+    cuadro(pdf, 120, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[22].solucion));
+    cuadro(pdf, 166, 246, 9, nSudoku, .5, 10, JSON.parse(tanda[23].solucion));
+    // Guarda el PDF con un nombre específico
+    pdf.save('Hojas24pdfs.pdf');
 }
 
 const tableroNuevo = () => {
     puestas = [];
     quedan = [];
-    tablero = [[], [], [], [], [], [], [], [], []];
-    bloques = [[], [], [], [], [], [], [], [], []];
+    tablero = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+    bloques = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
     casillasBloque = [];
     filas = [];
     columnas = [];
@@ -372,8 +533,8 @@ const reGeneraHtml = (n) => {//alert('entramos: '+n)
         let cuerpo = document.getElementById("cuerpo");
         cuerpo.innerHTML = '';
         puestas = [];
-        tablero = [[], [], [], [], [], [], [], [], []];
-        bloques = [[], [], [], [], [], [], [], [], []];
+        tablero = generaConjuntosVacios(nSudoku);//;
+        bloques = generaConjuntosVacios(nSudoku);//;
         casillasBloque = [];
         filas = [];
         columnas = [];
@@ -462,11 +623,14 @@ const generaHtml = () => {//alert('siiii')
 
     let container = document.createElement("div");
     container.id = 'sudoku-container';
-    container.className = "sudoku-container";
+   // container.className = "sudoku-container";
+    if( nSudoku===4)container.className = "sudoku-container4";
+    else if(nSudoku===16 ) container.className = "sudoku-container16";
+    else container.className = "sudoku-container";//sudoku de 9
     container.innerHTML = "";
     //container = document.getElementById("sudoku-container"+contenedor);
-    for (let i = 0; i < 9; i++) {
-        for (let j = 0; j < 9; j++) {
+    for (let i = 0; i < nSudoku; i++) {
+        for (let j = 0; j < nSudoku; j++) {
             let div = document.createElement("div");
             div.id = 'c' + i + '_' + j;
             // div.style.minHeight='100 px';
@@ -633,13 +797,15 @@ const eliminaCelda = (celda, v, i, j, kk) => {//alert(JSON.stringify(fijados)+'S
 }
 
 //let bloques=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
-let lbloques = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+
+//let lbloques = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+let lbloques = generaMenosUnos(nSudoku); //[-1, -1, -1, -1, -1, -1, -1, -1, -1];
 let bbloques = [];
-let lfilas = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+let lfilas = generaMenosUnos(nSudoku); // [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 let bfilas = [];
-let lcolumnas = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+let lcolumnas = generaMenosUnos(nSudoku); // [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 let bcolumnas = [];
-let lnumeros = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+let lnumeros = generaMenosUnos(nSudoku); // [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 let bnumeros = [];
 //let nbloques = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 //let mbloques = [];
@@ -681,7 +847,7 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
             //mbloques[bq] = bq;
         }
 
-        for (let k = 0; k < 9; k++) {
+        for (let k = 0; k < nSudoku; k++) {
             //tablero[i][j] = { valor: -1, posibles:{n:9, numeros:[]}}
             if (k !== valor) {
                 let celda = tablero[i][j].posibles.numeros[k];
@@ -792,7 +958,7 @@ const fijaGen = (tipo) => {//alert(tipo)
     }
     while (fcb1.length > 0) {//alert('..')        
         let b = bbloques[0];
-        let fcbTipo = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        let fcbTipo = GeneraNumerosSeg(nSudoku);//[0, 1, 2, 3, 4, 5, 6, 7, 8]
         switch (tipo) {
             case 'b':
                 fijaNum()
@@ -814,11 +980,11 @@ const fijaGen = (tipo) => {//alert(tipo)
                 break;
         }
         //alert(JSON.stringify(fcbTipo))
-        let grupos = [[], [], [], [], [], [], [], [], [], []];//alert('..') 
-        let gruposAcum = [[], [], [], [], [], [], [], [], [], []];
-        let filasNum = [[], [], [], [], [], [], [], [], []];
-        let colsNum = [[], [], [], [], [], [], [], [], []];
-        let bloquesNum = [[], [], [], [], [], [], [], [], []];
+        let grupos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];//alert('..') 
+        let gruposAcum = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
+        let filasNum = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+        let colsNum = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+        let bloquesNum = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
         let encontrados = [];
         let pendientes = [];
         fcbTipo.forEach((c, ic) => {//alert(c)
@@ -826,14 +992,14 @@ const fijaGen = (tipo) => {//alert(tipo)
             //tablero[i][j].posibles.numeros.push(celda);
             //tablero[i][j] = { valor: -1, posibles: { n: 9, numeros: [] } }
             let ns = [];
-            let lns = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
-            let lc = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+            let lns = generaMenosUnos(nSudoku); // [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+            let lc = generaMenosUnos(nSudoku); // [-1, -1, -1, -1, -1, -1, -1, -1, -1];
             //let fi=[];
             //let co=[];
             //let lfi=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
             //let lco=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
 
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < nSudoku; i++) {
                 let celda;
                 switch (tipo) {
                     case 'b':
@@ -916,10 +1082,10 @@ const fijaGen = (tipo) => {//alert(tipo)
 
         })
         //alert(JSON.stringify(grupos))
-        for (let num = 0; num < 9; num++) { //alert(JSON.stringify(filasNum))
+        for (let num = 0; num < nSudoku; num++) { //alert(JSON.stringify(filasNum))
             if (tipo === 'b') {
                 if (filasNum[num].length === 1) {
-                    [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach(cf => {
+                    /*[0, 1, 2, 3, 4, 5, 6, 7, 8]*/GeneraNumerosSeg(nSudoku).forEach(cf => {
                         let celda = tablero[filasNum[num][0]][cf].posibles.numeros[num];
                         if (celda.b !== b && celda.estado === 'c') {
                             fulminadas.push(celda)
@@ -927,7 +1093,7 @@ const fijaGen = (tipo) => {//alert(tipo)
                     })
                 }
                 if (colsNum[num].length === 1) {
-                    [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach(cf => {
+                    /*[0, 1, 2, 3, 4, 5, 6, 7, 8]*/GeneraNumerosSeg(nSudoku).forEach(cf => {
                         let celda = tablero[cf][colsNum[num][0]].posibles.numeros[num];
                         if (celda.b !== b && celda.estado === 'c') {
                             fulminadas.push(celda)
@@ -955,7 +1121,7 @@ const fijaGen = (tipo) => {//alert(tipo)
         }
         //alert(JSON.stringify(fulminadas));
         let ttt = '++b: ' + b + '\n';
-        let celdAcum = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let celdAcum = generaCeros(nSudoku);//[0, 0, 0, 0, 0, 0, 0, 0, 0];
         let celdAcumCon = 0;
         let resul = 0;
         let finalizado = false;
@@ -1039,7 +1205,7 @@ const fijaGen = (tipo) => {//alert(tipo)
                         }
                     }
                 }
-                if (j > 10) alert('i: ' + i + ' j: ' + j + '\n' + JSON.stringify(pendientes))
+                //if (j > 10) alert('i: ' + i + ' j: ' + j + '\n' + JSON.stringify(pendientes))
             }
         }
         encontrados.forEach(elem => {
@@ -1084,7 +1250,7 @@ const une = (c1, c2) => {
     let res = { c: [], ns: [], lc: [], lns: [] }
     //json.parse(json.stringify(c1));
     //let c2=json.parse(json.stringify(c2));
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < nSudoku; i++) {
         if (c1.lns[i] !== -1 && c2.lns[i] !== -1) {
             res.lns.push(i);
             res.ns.push(c1.ns[in1++]);
@@ -1124,26 +1290,26 @@ const fijaNum = () => {
         /*lbloques[b] = -1;
         bbloques.splice(0, 1);*/
 
-        let grupos = [[], [], [], [], [], [], [], [], [], []];//alert('..') 
-        let gruposAcum = [[], [], [], [], [], [], [], [], [], []];
-        let filasNum = [[], [], [], [], [], [], [], [], []];
-        let colsNum = [[], [], [], [], [], [], [], [], []];//[0, 1, 2, 3, 4, 5, 6, 7, 8]
+        let grupos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];//alert('..') 
+        let gruposAcum = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
+        let filasNum = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+        let colsNum = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];//[0, 1, 2, 3, 4, 5, 6, 7, 8]
         //valBloque[i].numeros.push({ v: ii, q: 9, celdas: [] })
         let encontrados = [];
         let pendientes = [];
-        [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach((c, ic) => {//alert(c)
+        /*[0, 1, 2, 3, 4, 5, 6, 7, 8]*/GeneraNumerosSeg(nSudoku).forEach((c, ic) => {//alert(c)
             //casillasBloque[b].forEach((c, ic) => {//alert(c)
             //let celda = { v: k, f: i, c: j, b: bloques[i][j], estado: 'c' }
             //tablero[i][j].posibles.numeros.push(celda);
             //tablero[i][j] = { valor: -1, posibles: { n: 9, numeros: [] } }
             let ns = [];
-            let lns = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
-            let lc = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+            let lns = generaMenosUnos(nSudoku); // [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+            let lc = generaMenosUnos(nSudoku); // [-1, -1, -1, -1, -1, -1, -1, -1, -1];
             //let fi=[];
             //let co=[];
             //let lfi=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
             //let lco=[-1,-1,-1,-1,-1,-1,-1,-1,-1];
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < nSudoku; i++) {
                 let celda = valBloque[b].numeros[c].celdas[i];
                 //let celda = tablero[c[0]][c[1]].posibles.numeros[i];
                 //alert(JSON.stringify(celda))
@@ -1204,9 +1370,9 @@ const fijaNum = () => {
             }
 
         })
-        for (let num = 0; num < 9; num++) { //alert(JSON.stringify(filasNum))           
+        for (let num = 0; num < nSudoku; num++) { //alert(JSON.stringify(filasNum))           
             if (filasNum[num].length === 1) {
-                [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach(cf => {
+                /*[0, 1, 2, 3, 4, 5, 6, 7, 8]*/GeneraNumerosSeg(nSudoku).forEach(cf => {
                     let celda = tablero[filasNum[num][0]][cf].posibles.numeros[num];
                     if (celda.b !== b && celda.estado === 'c') {
                         fulminadas.push(celda)
@@ -1214,7 +1380,7 @@ const fijaNum = () => {
                 })
             }
             if (colsNum[num].length === 1) {
-                [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach(cf => {
+                /*[0, 1, 2, 3, 4, 5, 6, 7, 8]*/GeneraNumerosSeg(nSudoku).forEach(cf => {
                     let celda = tablero[cf][colsNum[num][0]].posibles.numeros[num];
                     if (celda.b !== b && celda.estado === 'c') {
                         fulminadas.push(celda)
@@ -1225,7 +1391,7 @@ const fijaNum = () => {
 
 
         let ttt = '++b: ' + b + '\n';
-        let celdAcum = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let celdAcum = generaCeros(nSudoku);//[0, 0, 0, 0, 0, 0, 0, 0, 0];
         let celdAcumCon = 0;
         let resul = 0;
         let finalizado = false;
@@ -1294,11 +1460,11 @@ const fijaNum = () => {
                         }
                     }
                 }
-                if (j > 10) alert('i: ' + i + ' j: ' + j + '\n' + JSON.stringify(pendientes))
+                //if (j > 10) alert('i: ' + i + ' j: ' + j + '\n' + JSON.stringify(pendientes))
             }
         }
         encontrados.forEach(elem => {
-            [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach((c, ci) => {
+            /*[0, 1, 2, 3, 4, 5, 6, 7, 8]*/GeneraNumerosSeg(nSudoku).forEach((c, ci) => {
                 if (elem.lc[ci] === -1) {
                     let celdas = valBloque[b].numeros[c].celdas;
                     //let celdas=tablero[c[0]][c[1]].posibles.numeros;
@@ -1414,14 +1580,14 @@ const ponfijados = () => {
 
 const muestraTablero = () => {
     //alert(JSON.stringify(tablero))
-    let ensayos = [[], [], [], [], [], [], [], [], [], []];
-    let fil_N = [[], [], [], [], [], [], [], [], []];
-    let col_N = [[], [], [], [], [], [], [], [], []];
-    let blok_N = [[], [], [], [], [], [], [], [], []];
+    let ensayos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
+    let fil_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+    let col_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+    let blok_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
     //alert(JSON.stringify(ensayos))
     //let kk=[];
-    for (let i = 0; i < 9; i++)
-        for (let j = 0; j < 9; j++) {
+    for (let i = 0; i < nSudoku; i++)
+        for (let j = 0; j < nSudoku; j++) {
             fil_N[i][j] = false;
             col_N[i][j] = false;
             blok_N[i][j] = false;
@@ -1429,8 +1595,8 @@ const muestraTablero = () => {
     //alert(JSON.stringify(fil_N));
     //alert(JSON.stringify(col_N));
     //alert(JSON.stringify(blok_N));
-    for (let i = 0; i < 9; i++)
-        for (let j = 0; j < 9; j++) {//if(i===0&&j===0)alert(i+' '+j)
+    for (let i = 0; i < nSudoku; i++)
+        for (let j = 0; j < nSudoku; j++) {//if(i===0&&j===0)alert(i+' '+j)
             if (tablero[i][j].valor === -1) {
                 let itemEnsayo = {};
                 itemEnsayo.f = i;
@@ -1465,7 +1631,7 @@ const muestraTablero = () => {
         ensayo[i] = ensayos[1][i];
     }
     let ensayosL = [];
-    for (let i = 2; i < 10; i++) {
+    for (let i = 2; i < nSudoku+1; i++) {
         for (let j = 0; j < ensayos[i].length; j++) {
             ensayosL.push(ensayos[i][j])
         }
@@ -1628,14 +1794,14 @@ const desordena = (vector) => {
 
 const muestraTablero2 = () => {
     //alert(JSON.stringify(tablero))
-    let ensayos = [[], [], [], [], [], [], [], [], [], []];
-    let fil_N = [[], [], [], [], [], [], [], [], []];
-    let col_N = [[], [], [], [], [], [], [], [], []];
-    let blok_N = [[], [], [], [], [], [], [], [], []];
+    let ensayos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
+    let fil_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+    let col_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+    let blok_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
     //alert(JSON.stringify(ensayos))
     //let kk=[];
-    for (let i = 0; i < 9; i++)
-        for (let j = 0; j < 9; j++) {
+    for (let i = 0; i < nSudoku; i++)
+        for (let j = 0; j < nSudoku; j++) {
             fil_N[i][j] = false;
             col_N[i][j] = false;
             blok_N[i][j] = false;
@@ -1643,8 +1809,8 @@ const muestraTablero2 = () => {
     //alert(JSON.stringify(fil_N));
     //alert(JSON.stringify(col_N));
     //alert(JSON.stringify(blok_N));
-    for (let i = 0; i < 9; i++)
-        for (let j = 0; j < 9; j++) {//if(i===0&&j===0)alert(i+' '+j)
+    for (let i = 0; i < nSudoku; i++)
+        for (let j = 0; j < nSudoku; j++) {//if(i===0&&j===0)alert(i+' '+j)
             if (tablero[i][j].valor === -1) {
                 let itemEnsayo = {};
                 itemEnsayo.f = i;
@@ -1679,7 +1845,7 @@ const muestraTablero2 = () => {
         ensayo[i] = ensayos[1][i];
     }
     let ensayosL = [];
-    for (let i = 2; i < 10; i++) {
+    for (let i = 2; i < nSudoku+1; i++) {
         for (let j = 0; j < ensayos[i].length; j++) {
             ensayosL.push(ensayos[i][j])
         }
@@ -1752,14 +1918,14 @@ const muestraTablero2 = () => {
 
 const muestraTablero3 = () => {
     //alert(JSON.stringify(tablero))
-    let ensayos = [[], [], [], [], [], [], [], [], [], []];
-    let fil_N = [[], [], [], [], [], [], [], [], []];
-    let col_N = [[], [], [], [], [], [], [], [], []];
-    let blok_N = [[], [], [], [], [], [], [], [], []];
+    let ensayos = generaConjuntosVacios(nSudoku+1);//[[], [], [], [], [], [], [], [], [], []];
+    let fil_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+    let col_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
+    let blok_N = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
     //alert(JSON.stringify(ensayos))
     //let kk=[];
-    for (let i = 0; i < 9; i++)
-        for (let j = 0; j < 9; j++) {
+    for (let i = 0; i < nSudoku; i++)
+        for (let j = 0; j < nSudoku; j++) {
             fil_N[i][j] = false;
             col_N[i][j] = false;
             blok_N[i][j] = false;
@@ -1767,8 +1933,8 @@ const muestraTablero3 = () => {
     //alert(JSON.stringify(fil_N));
     //alert(JSON.stringify(col_N));
     //alert(JSON.stringify(blok_N));
-    for (let i = 0; i < 9; i++)
-        for (let j = 0; j < 9; j++) {//if(i===0&&j===0)alert(i+' '+j)
+    for (let i = 0; i < nSudoku; i++)
+        for (let j = 0; j < nSudoku; j++) {//if(i===0&&j===0)alert(i+' '+j)
             if (tablero[i][j].valor === -1) {
                 let itemEnsayo = {};
                 itemEnsayo.f = i;
@@ -1803,7 +1969,7 @@ const muestraTablero3 = () => {
         ensayo[i] = ensayos[1][i];
     }
     let ensayosL = [];
-    for (let i = 2; i < 10; i++) {
+    for (let i = 2; i < nSudoku+1; i++) {
         for (let j = 0; j < ensayos[i].length; j++) {
             ensayosL.push(ensayos[i][j])
         }

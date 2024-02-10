@@ -15,12 +15,16 @@
     <h1>Sudoku, solucionador y generador.</h1>
     <label for="miInput">Caracteres del sudoku:</label>
     <input type="text" id="miInput" name="miInput" value="123456789">
+    ¿Cuántas casillas?<select id="tipo" onchange="nSudoku=+this.value;ponCaracteres();tableroNuevo()">
+        <option value="4">4</option>
+        <option value="9" selected>9</option>
+    </select>
     <div id="cuerpo"></div>
     <button onclick="ponCaracteres();tableroNuevo()">Resuelve nuevo Sudoku</button>
     <button onclick="deshacer()">deshacer</button>
     <button onclick="ResuelveBruta()">Resuelve</button><br>
     <div id="historial" style="visibility: hidden;"></div>
-    <button onclick="generar6Pdf()">Generar Hoja PDF con 6 sudokus</button>
+    <button onclick="generar6Pdf()">Generar Hoja PDF con 6 sudokus de 9 numeros</button>
     <label for="miSelect">casillas extra sobre el mínimo del sudoku:</label>
     <select id="miSelect">
         <option value="0">0</option>
@@ -39,6 +43,14 @@
         <option value="13">13</option>
         <option value="14">14</option>
         <option value="15">15</option>
+    </select><br>
+    <button onclick="generar24Pdf()">Generar Hoja PDF con 24 sudokus de 4 numeros</button>
+    <label for="miSelect2">casillas extra sobre el mínimo del sudoku:</label>
+    <select id="miSelect2">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
     </select>
     <div id="ddiv"
         style="position: absolute;background-color: #ccc;padding: 10px; border: 1px solid #000; display: none;">

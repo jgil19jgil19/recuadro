@@ -37,6 +37,90 @@
   border-top: 0.15em solid #000;
 }
 
+/*para los de 4 */
+.sudoku-container4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-gap: 2px;
+  margin-bottom: 20px;
+  width: 4em;
+}
+
+.sudoku-container4 div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #fff;
+  border: 0.1em solid #000;
+  width: 1em;
+  height: 1em;
+}
+
+.sudoku-container4 div:nth-child(2n) {
+  border-right: 0.15em solid #000;
+}
+
+.sudoku-container4 div:nth-child(2n+1) {
+  border-left: 0.15em solid #000;
+}
+
+.sudoku-container4 div:nth-child(n+5):nth-child(-n+8)/*,
+.sudoku-container4 div:nth-child(n+46):nth-child(-n+54)*/ {
+  border-bottom: 0.15em solid #000;
+}
+
+.sudoku-container4 div:nth-child(n+9):nth-child(-n+12)/*,
+.sudoku-container4 div:nth-child(n+55):nth-child(-n+63)*/{
+  border-top: 0.15em solid #000;
+}
+/*fin 4*/
+
+/*Para los de 16*/
+.sudoku-container16 {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  grid-template-rows: repeat(16, 1fr);
+  grid-gap: 2px;
+  margin-bottom: 20px;
+  width: 16em;
+}
+
+.sudoku-container16 div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #fff;
+  border: 0.1em solid #000;
+  width: 1em;
+  height: 1em;
+}
+
+.sudoku-container16 div:nth-child(4n) {
+  border-right: 0.15em solid #000;
+}
+
+.sudoku-container16 div:nth-child(4n+1) {
+  border-left: 0.15em solid #000;
+}
+
+.sudoku-container16 div:nth-child(n+49):nth-child(-n+64),
+.sudoku-container16 div:nth-child(n+113):nth-child(-n+128),
+.sudoku-container16 div:nth-child(n+177):nth-child(-n+192) {
+  border-bottom: 0.15em solid #000;
+}
+
+.sudoku-container16 div:nth-child(n+65):nth-child(-n+80),
+.sudoku-container16 div:nth-child(n+129):nth-child(-n+144),
+.sudoku-container16 div:nth-child(n+193):nth-child(-n+208) {
+  border-top: 0.15em solid #000;
+}
+/*fin de los de 16*/
+
 button {
   font-size: 16px;
   padding: 10px 20px;
