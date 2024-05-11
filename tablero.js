@@ -106,6 +106,10 @@ const GenConjBq=()=>{
 let gruposBq=generaObjetosVacios(nSudoku);
 let numGBq=generaConjuntosVacios(nSudoku);
 let nBqFC=generaConjuntosVacios(nSudoku);
+let repasoEliminables=[]//para hacer un historico de todos estos elementos;
+const ponRepasoEliminables=()=>{
+    repasoEliminables.push(JSON.stringify({conjBq,gruposBq,numGBq, nBqFC}))
+}
 const GenNBqFC=()=>{
     for(let i=0;i<nSudoku;i++){
         nBqFC[i]=generaConjuntosVacios(nSudoku);
@@ -973,6 +977,14 @@ const deshacer = () => {
 
     //alert('siii'+JSON.stringify(tablero));
     generaHtml();
+    repasoEliminables.pop();
+    let repant=JSON.parse(repasoEliminables[repasoEliminables.length-1])//.push(JSON.stringify({conjBq,gruposBq,numGBq, nBqFC}))
+    conjBq=repant.conjBq;
+    gruposBq=repant.gruposBq;
+    numGBq=repant.numGBq;
+    nBqFC=repant.nBqFC;
+    //normalizables=[];
+    //alert(JSON.stringify(repant))
     return ultimaSeleccionada;
 
 }
@@ -1607,7 +1619,10 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
             //alert(JSON.stringify(fijados));
             ponfijados();
             
-        } else generaHtml();
+        } else {
+            if (estado === 's')repasoEliminables.push(JSON.stringify({conjBq,gruposBq,numGBq, nBqFC}))
+            generaHtml()
+        };
         //alert(JSON.stringify(valBloque))
 
         //repasaTodo();
