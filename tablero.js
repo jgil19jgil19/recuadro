@@ -20,6 +20,13 @@ const generaConjuntosVacios=(n)=>{
     }
     return elem;
 }
+const generaObjetosVacios=(n)=>{
+    let elem=[];
+    for(let i=0;i<n;i++){
+        elem.push({});
+    }
+    return elem;
+}
 
 const GeneraCuadroEspacios = (n)=>{
     let res=[]
@@ -44,6 +51,7 @@ let tablero = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], 
 //alert('oo')
 let bloques = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
 let casillasBloque = [];
+let casillasBloquePos = generaConjuntosVacios(nSudoku);
 let filas = [];
 let columnas = [];
 let valBloque = [];
@@ -59,12 +67,418 @@ const ponCasillas = (patron) => {//alert(patron)
                 //alert(auxi+'-'+auxj+'='+(3*auxi+auxj)+' ll '+casillasBloque[3*auxi+auxj])
                 if (!casillasBloque[Math.sqrt(nSudoku) * auxi + auxj]) casillasBloque[Math.sqrt(nSudoku) * auxi + auxj] = [];
                 casillasBloque[Math.sqrt(nSudoku) * auxi + auxj].push([i, j]);
+                casillasBloquePos[i][j]=casillasBloque[Math.sqrt(nSudoku) * auxi + auxj].length-1;
                 bloques[i][j] = Math.sqrt(nSudoku) * auxi + auxj;
+            }
+        }
+    }else {
+        bloques=JSON.parse(patron);
+        casillasBloque = [];
+        for (let i = 0; i < nSudoku; i++){
+            casillasBloque.push([]);
+        }
+        for (let i = 0; i < nSudoku; i++){
+            for (let j = 0; j < nSudoku; j++){
+                let bk=bloques[i][j];
+                casillasBloque[bk].push([i,j]);
+                casillasBloquePos[i][j]=casillasBloque[bk].length-1;
             }
         }
     }
     //alert('se acaba')
 }
+
+let conjBq=generaConjuntosVacios(nSudoku);
+const GenConjBq=()=>{
+    for (let b = 0; b < nSudoku; b++){
+        conjBq[b]={f:generaMenosUnos(nSudoku), c:generaMenosUnos(nSudoku)};
+        let cas= casillasBloque[b];
+        cas.forEach(c=>{
+            if (conjBq[b].f[c[0]]===-1)conjBq[b].f[c[0]]=1;
+            else conjBq[b].f[c[0]]++;
+            if (conjBq[b].c[c[1]]===-1)conjBq[b].c[c[1]]=1;
+            else conjBq[b].c[c[1]]++;
+        })
+    }
+}
+//valBloque[i] = { huecos: nSudoku, numeros: [] }
+//valBloque[i].numeros.push({ v: ii, q: nSudoku, celdas: [] })
+let gruposBq=generaObjetosVacios(nSudoku);
+let numGBq=generaConjuntosVacios(nSudoku);
+let nBqFC=generaConjuntosVacios(nSudoku);
+const GenNBqFC=()=>{
+    for(let i=0;i<nSudoku;i++){
+        nBqFC[i]=generaConjuntosVacios(nSudoku);
+        for(let j=0;j<nSudoku;j++){
+            nBqFC[i][j]={}
+            nBqFC[i][j].f=generaMenosUnos(nSudoku);
+            nBqFC[i][j].nf=0;
+            nBqFC[i][j].c=generaMenosUnos(nSudoku);
+            nBqFC[i][j].nc=0;
+            nBqFC[i][j].Fpendiente=true; 
+            nBqFC[i][j].Cpendiente=true; 
+        }
+    }
+    //alert(1+JSON.stringify(nBqFC))
+    for(let i=0;i<nSudoku;i++){//alert(i)
+        let cs=casillasBloque[i];
+        //alert(JSON.stringify(cs))
+        cs.forEach(c=>{
+            if(nBqFC[0][i].f[c[0]]===-1){
+                for(let j=0;j<nSudoku;j++){
+                    nBqFC[j][i].f[c[0]]=c[0];
+                    nBqFC[j][i].nf++;
+                }
+            }
+            if(nBqFC[0][i].c[c[1]]===-1){
+                for(let j=0;j<nSudoku;j++){
+                    nBqFC[j][i].c[c[1]]=c[1];
+                    nBqFC[j][i].nc++;
+                }
+            }
+        })
+    }
+    //alert(JSON.stringify(nBqFC))
+}
+//GenNBqFC()
+const GenNumGBq=()=>{
+    for(let i=0;i<nSudoku;i++){
+        numGBq[i]=generaConjuntosVacios(nSudoku);
+    }
+    /*numGBq.forEach(b=>{
+        b=generaConjuntosVacios(nSudoku);
+    })*/
+    //alert(JSON.stringify(numGBq));
+}
+GenNumGBq();
+let normalizables=[];
+const trataGrupos=(celda,bq,tipo)=>{//alert(bq+'-'+celda.b)
+    if(bq!==celda.b){ bq=celda.b
+            //alert('bloque: '+bq+', valor: '+celda.v+' ,'+JSON.stringify(numGBq[bq][celda.v]));
+            let casos=JSON.parse(JSON.stringify(numGBq[bq][celda.v]))
+            let fusionado=false;
+            let limpiables=[];
+            casos.forEach((caso,pos)=>{
+                let el=gruposBq[bq][caso];
+                if(gruposBq[bq][caso]===undefined){
+                    //alert('++++'+caso);
+                    limpiables.push({caso,pos})
+                }else{
+                //alert(caso+':\n'+JSON.stringify(el))
+                let nfc=el.nfc;
+                let nfilas='';
+                let ncol='';
+                let nom='';
+                let lfil=[];
+                let lcol=[];
+                for(let i=0;i<nSudoku;i++){
+                    if(el.f[i]>=0){
+                        nfilas+='_'+el.f[i];
+                        lfil.push(el.f[i]);
+                        nfc--
+                    }else{
+                        if(tipo==='f'&&celda.f===i){
+                            nfilas+='_'+celda.f;
+                            lfil.push(celda.f);
+                        }
+                    }
+                    if(el.c[i]>=0){
+                        ncol+='_'+el.c[i];
+                        lcol.push(el.c[i]);
+                        nfc--
+                    }else{
+                        if(tipo==='c'&&celda.c===i){
+                            ncol+='_'+celda.c;
+                            lcol.push(celda.c);
+                        }
+                    }
+                    if(nfc===0){
+                        if(tipo==='f'&&celda.f>i){
+                            nfilas+='_'+celda.f;
+                            lfil.push(celda.f);
+                        }
+                        if(tipo==='c'&&celda.c>i){
+                            ncol+='_'+celda.c;
+                            lcol.push(celda.c);
+                        }
+                        break;
+                    };
+                }
+                if(nfilas!=='')nom='f'+nfilas;
+                if(ncol!=='')nom+='c'+ncol;
+                //alert('----'+nom);
+                let elemento='';
+                if(gruposBq[bq][nom]!==undefined){
+                    elemento=gruposBq[bq][nom];
+                    elemento.v[celda.v]=celda.v;
+                    elemento.nv++;
+                }else{
+                    elemento={v:generaMenosUnos(nSudoku),
+                     nv:1,
+                     f:JSON.parse(JSON.stringify(el.f)),
+                     c:JSON.parse(JSON.stringify(el.c)),
+                     n:-1,
+                     nfc:el.nfc+1}
+                     elemento.v[celda.v]=celda.v
+                     if(tipo==='f'){
+                        elemento.f[celda.f]=celda.f
+                     }else{
+                        elemento.c[celda.c]=celda.c
+                     }
+                    elemento.n=valBloque[bq].huecos;//-conjBq[bq].c[celda.c]
+                    lfil.forEach(f=>{
+                        elemento.n-=conjBq[bq].f[f];
+                        for(let ii=0;ii<lcol.length;ii++){
+                            //tablero[i][j].posibles.n
+                            if(bloques[f][lcol]===bq&&tablero[f][lcol].posibles.n>1){
+                                elemento.n++;
+                            }
+                        }
+                    })
+                    lcol.forEach(c=>{
+                        elemento.n-=conjBq[bq].c[c];
+                    })
+                    elemento.pendiente=true;
+                    gruposBq[bq][nom]=elemento;
+                }
+                numGBq[bq][celda.v].push(nom);
+                if(elemento.pendiente && elemento.nv===elemento.n && elemento.nv>1){
+                    normalizables.push({b:bq, el:elemento});
+                    //alert(1+':|n'+JSON.stringify(normalizables))
+                }
+                //alert(JSON.stringify(gruposBq[bq]))
+                
+                //alert(',....'+JSON.stringify(el))
+                /*if (el.nv>1){
+                    el.v[celda.v]=-1;
+                    el.nv--;
+                }else delete gruposBq[bq][caso];*/
+                //alert(',....'+JSON.stringify(gruposBq[bq][caso]));
+
+
+            }
+            })
+            //alert(JSON.stringify(limpiables)+'\n'+JSON.stringify(numGBq[bq][celda.v]))
+            for(let il=limpiables.length-1;il>=0;il--){
+                numGBq[bq][celda.v].splice(limpiables[il].pos,1);
+            }
+            //alert(JSON.stringify(numGBq[bq][celda.v]))
+            /*if(casos.length>0){
+                fusionado=true;
+                alert(JSON.stringify(casos)+',....'+JSON.stringify(numGBq[bq][celda.v]));
+                numGBq[bq][celda.v].splice(0,casos.length);
+                alert(',....'+JSON.stringify(numGBq[bq][celda.v]));
+            }*/
+
+            if(!fusionado){
+
+            let key=tipo+'_';
+            if(tipo==='f'){
+                key+=celda.f;
+            }else if(tipo==='c'){
+                key+=celda.c;
+            }
+            let elem;//alert(elem)
+            if(gruposBq[bq][key]!==undefined){
+                elem=gruposBq[bq][key];
+            }else{
+                elem={v:generaMenosUnos(nSudoku),
+                 nv:0,
+                 f:generaMenosUnos(nSudoku),
+                 c:generaMenosUnos(nSudoku),
+                 n:-1,
+                 nfc:1}
+                 elem.pendiente=true;
+            }          
+            //nBqFC[i][j].Fpendiente=true;
+            if(tipo==='f'){
+                if( nBqFC[celda.v][celda.b].Fpendiente&&nBqFC[celda.v][celda.b].nf>0){
+                    //alert(celda.v+', '+celda.b+', f:'+celda.f+';\n'+JSON.stringify(nBqFC[celda.v][celda.b]))
+                    nBqFC[celda.v][celda.b].f[celda.f]=-2
+                    nBqFC[celda.v][celda.b].nf--;
+                }
+                if(nBqFC[celda.v][celda.b].Fpendiente&&nBqFC[celda.v][celda.b].nf===1){
+                    //alert('por filas')
+                    let fci=0;
+                    while (nBqFC[celda.v][celda.b].f[fci]<0){
+                        fci++;
+                    }
+                    filasColLimpiables.push({tipo:'f', v:celda.v, b:celda.b,fc:fci})
+                    //limpiaFilasCol=('f', nBqFC[i],b,fc)
+                }
+                elem.nv++;
+                elem.f[celda.f]=celda.f;
+                elem.n=valBloque[bq].huecos-conjBq[bq].f[celda.f]
+            }else if(tipo==='c'){
+                if( nBqFC[celda.v][celda.b].Cpendiente&&nBqFC[celda.v][celda.b].nc>0){
+                    nBqFC[celda.v][celda.b].c[celda.c]=-2
+                    nBqFC[celda.v][celda.b].nc--;
+                }
+                if(nBqFC[celda.v][celda.b].Cpendiente&&nBqFC[celda.v][celda.b].nc===1){
+                    //alert('por col')
+                    let fci=0;
+                    while (nBqFC[celda.v][celda.b].c[fci]<0){
+                        fci++;
+                    }
+                    filasColLimpiables.push({tipo:'c', v:celda.v, b:celda.b, fc:fci})
+                    //filasColLimpiables.push({tipo:'c', v:celda.v, b:celda.b,fc:celda.c})
+                }
+                elem.nv++;
+                elem.c[celda.c]=celda.c;
+                elem.n=valBloque[bq].huecos-conjBq[bq].c[celda.c]
+            }
+            elem.v[celda.v]=celda.v;//alert(key);
+            //elem.nfc++;
+            //alert(key+JSON.stringify(elem)+valBloque[bq].huecos/*+''+JSON.stringify(conjBq)*/);
+            gruposBq[bq][key]=elem;
+            numGBq[bq][celda.v].push(key);
+            if(elem.pendiente&&elem.nv===elem.n && elem.nv>1)normalizables.push({b:bq, el:elem});
+            }
+            //alert(JSON.stringify(numGBq));
+        
+    }else{
+        //alert('+++'+JSON.stringify(celda)+'\n'+bq)
+        let kkss=JSON.stringify(conjBq[celda.b])+'\n';
+        conjBq[celda.b].f[celda.f]--;/////////////////////////////
+        //alert(JSON.stringify(nBqFC[celda.v][celda.b]))
+        nBqFC[celda.v][celda.b].Fpendiente=false;
+        nBqFC[celda.v][celda.b].Cpendiente=false;
+        for(let i=0;i<nSudoku;i++){
+            if(nBqFC[celda.v][celda.b].f[i]!==-1){
+                nBqFC[celda.v][celda.b].f[i]=-2
+                nBqFC[celda.v][celda.b].nf=0;
+            }
+            if(nBqFC[celda.v][celda.b].c[i]!==-1){
+                nBqFC[celda.v][celda.b].c[i]=-2
+                nBqFC[celda.v][celda.b].nc=0;
+            }
+        }
+        //alert(celda.v+'; '+celda.b+':--\n'+JSON.stringify(nBqFC[celda.v][celda.b]))
+        if(conjBq[celda.b].f[celda.f]===0){
+            /*nBqFC[celda.v][celda.b].Fpendiente=false;
+            nBqFC[celda.v][celda.b].Cpendiente=false;*/
+            for(let i=0;i<nSudoku;i++){
+                //alert(i+'; '+celda.b+':++\n'+JSON.stringify(nBqFC[i][celda.b]))
+                if(i!==celda.v && nBqFC[i][celda.b].nf>0  && nBqFC[i][celda.b].f[celda.f]>-1){
+                    nBqFC[i][celda.b].f[celda.f]=-2
+                    nBqFC[i][celda.b].nf--;
+                }
+                //alert(i+'; '+celda.b+':\n'+JSON.stringify(nBqFC[i][celda.b]))
+                if(nBqFC[i][celda.b].nf===1&&nBqFC[i][celda.b].Fpendiente){
+                    //alert('por filas')
+                    let fci=0;
+                    while (nBqFC[i][celda.b].f[fci]<0){
+                        fci++;
+                    }
+                    filasColLimpiables.push({tipo:'f', v:i, b:celda.b,fc:fci})
+                    //filasColLimpiables.push({tipo:'f', v:nBqFC[i], b:[celda.b],fc:celda.f})
+                    //limpiaFilasCol=('f', nBqFC[i],b,fc)
+                }
+                //alert(i+'; '+celda.b+':++\n'+JSON.stringify(nBqFC[i][celda.b]))
+                //alert(i+';++\n'+JSON.stringify(nBqFC[i]))
+            }
+            for (let ii in gruposBq[bq]){
+                if(gruposBq[bq][ii].f[celda.f]>-1){
+                    delete(gruposBq[bq][ii]);
+                }
+            } 
+        };
+        conjBq[celda.b].c[celda.c]--;
+        if(conjBq[celda.b].c[celda.c]===0){
+            for(let i=0;i<nSudoku;i++){
+                if(i!==celda.v && nBqFC[i][celda.b].nc>0 && nBqFC[i][celda.b].c[celda.c]>-1){
+                    nBqFC[i][celda.b].c[celda.c]=-2
+                    nBqFC[i][celda.b].nc--;
+                }
+                if(nBqFC[i][celda.b].nc===1&&nBqFC[i][celda.b].Cpendiente){
+                    //alert('por col')
+                    let fci=0;
+                    while (nBqFC[i][celda.b].c[fci]<0){
+                        fci++;
+                    }
+                    filasColLimpiables.push({tipo:'c', v:i, b:celda.b,fc:fci})
+                    //filasColLimpiables.push({tipo:'c', v:nBqFC[i], b:[celda.b],fc:celda.c})
+                    //limpiaFilasCol=('f', nBqFC[i],b,fc)
+                }
+            }
+            for (let ii in gruposBq[bq]){
+                if(gruposBq[bq][ii].c[celda.c]>-1){
+                    delete(gruposBq[bq][ii]);
+                }
+            } 
+        };
+        //alert('---'+kkss+JSON.stringify(conjBq[celda.b])+'\n'+JSON.stringify(numGBq[celda.b]))
+        let casos=numGBq[bq][celda.v];
+        casos.forEach(caso=>{
+            let el=gruposBq[bq][caso];
+            //alert('....'+JSON.stringify(el))
+            if (el!==undefined&&el.nv>1){
+                el.v[celda.v]=-1;
+                el.nv--;
+            }else delete gruposBq[bq][caso];
+            //alert('....'+JSON.stringify(gruposBq[bq][caso]));
+        })
+        let zz='++..++';
+        for (let ii in gruposBq[bq]){
+            zz+=ii;
+            if(gruposBq[bq][ii].f[celda.f]===-1&&gruposBq[bq][ii].c[celda.c]===-1){
+                gruposBq[bq][ii].n--;
+                if(gruposBq[bq][ii].pendiente&&gruposBq[bq][ii].nv===gruposBq[bq][ii].n && gruposBq[bq][ii].nv>1)normalizables.push({b:bq, el:gruposBq[bq][ii]});
+            }
+        }
+        //alert (zz);
+    }
+    //alert('****'+JSON.stringify(normalizables))
+    //alert(JSON.stringify(filasColLimpiables))
+    /* if (filasColLimpiables.length>0){
+        alert(JSON.stringify(filasColLimpiables))
+        limpiaFilasCol();
+    }*/
+}
+//filasColLimpiables.push({tipo:'c', v:i, b:celda.b,fc:fci}
+let filasColLimpiables=[];
+const limpiaFilasCol=(/*tipo,v,b,fc*/)=>{
+    while(filasColLimpiables.length>0){
+        let fcp=filasColLimpiables.splice(0,1)[0];
+        //alert(JSON.stringify(fcp))
+        if(fcp.tipo==='f'){ //alert(JSON.stringify( nBqFC[fcp.v][fcp.b]))
+            //{tipo:'c', v:i, b:celda.b,fc:fci}
+            //nBqFC[fcp.v][fcp.b].Fpendiente=false;
+            let bqsF=generaMenosUnos(nSudoku);
+            for(let i=0;i<nSudoku;i++){
+                    let celda = tablero[fcp.fc][i].posibles.numeros[fcp.v];
+                    nBqFC[celda.v][celda.b].Fpendiente=false;
+                    if(celda.b!==fcp.b&&celda.estado==='c'){//alert(fcp.b+'||'+JSON.stringify(celda))
+                        eliminaCelda(celda, celda.v, celda.f, celda.c);
+                        if(bqsF[celda.b]===-1){
+                            trataGrupos(celda,fcp.b,'f');
+                            bqsF[celda.b]=celda.b
+                        }
+                    }                
+            }
+            //alert('***'+JSON.stringify( nBqFC[fcp.v][fcp.b]))
+
+        }else{
+            let bqsC=generaMenosUnos(nSudoku);
+            for(let i=0;i<nSudoku;i++){
+                let celda = tablero[i][fcp.fc].posibles.numeros[fcp.v];
+                nBqFC[fcp.v][fcp.b].Cpendiente=false;
+                if(celda.b!==fcp.b&&celda.estado==='c'){
+                    eliminaCelda(celda, celda.v, celda.f, celda.c);
+                    nBqFC[celda.v][celda.b].Cpendiente=false;
+                    if(bqsC[celda.b]===-1){
+                        trataGrupos(celda,fcp.b,'c');
+                        bqsC[celda.b]=celda.b
+                    }
+                }
+        }
+
+        }
+
+    }
+
+}
+
 
 const getCasBloque = (fil, col) => {
     return casillasBloque[bloques[fil][col]];
@@ -105,6 +519,80 @@ const ponTablero = () => {
         }
     }
     quedanN = quedan.length;
+}
+
+const generar2Pdf = () => {
+    let tanda = [];
+    let sudoku = []
+
+    //alert(cuadSudoku)
+    //adicionales
+    let adicionales = +document.getElementById('miSelect3').value;
+    nSudoku=16;
+    //ponCaracteres();tableroNuevo();
+    document.getElementById('tipo').value=nSudoku;
+
+    for (let i = 0; i < 6; i++) {
+        generaAlAzar();
+        //alert('vamos por el sudoku: '+i)
+        let fijados = [];
+        let cuadSudoku = GeneraCuadroEspacios(nSudoku);/* [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']];*/
+        let solSudoku = JSON.parse(JSON.stringify(cuadSudoku))
+        sudoku = JSON.parse(JSON.stringify(puestas));
+        sudoku.forEach(el => {
+            cuadSudoku[el[0].f][el[0].c] = caracteres[el[0].v]
+            /*if (el[0].v === 0) cuadSudoku[el[0].f][el[0].c] = '9'
+            else cuadSudoku[el[0].f][el[0].c] = '' + el[0].v;*/
+            el.forEach((it, i) => {
+                if (i > 0) fijados.push(it);
+            })
+        })
+
+        for (let i = 0; i < adicionales; i++) {
+            let aux = Math.floor(fijados.length * Math.random());
+            let kk = fijados.splice(aux, 1);
+            cuadSudoku[kk[0].f][kk[0].c] = caracteres[kk[0].v]
+            /*if (kk[0].v === 0) cuadSudoku[kk[0].f][kk[0].c] = '9'
+            else cuadSudoku[kk[0].f][kk[0].c] = '' + kk[0].v;*/
+        }
+        //generamos el cuadro solución
+        fijados.forEach(fj => {
+            solSudoku[fj.f][fj.c] = caracteres[fj.v];
+            /*if(fj.v===0)solSudoku[fj.f][fj.c]='9'
+            else solSudoku[fj.f][fj.c]=''+fj.v;*/
+        })
+
+        tanda.push({ problema: JSON.stringify(cuadSudoku), solucion: JSON.stringify(solSudoku) })
+    }
+    //alert('kkk'+adicionales)
+    let pdf = new jsPDF();
+    cuadro(pdf, 10, 15, 8, nSudoku, .5, 10, JSON.parse(tanda[0].problema));
+    //cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[1].problema));
+
+    cuadro(pdf, 10, 159, 8, nSudoku, .5, 10, JSON.parse(tanda[1].problema));
+    //cuadro(pdf, 120, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[3].problema));
+
+   /*cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[4].problema));
+    cuadro(pdf, 120, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[5].problema));*/
+
+    pdf.addPage();
+
+    pdf.text('SOLUCIONES', 90, 10);
+
+    cuadro(pdf, 10, 15, 8, nSudoku, .5, 10, JSON.parse(tanda[0].solucion));
+    //cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, JSON.parse(tanda[1].solucion));
+
+    cuadro(pdf, 10, 159, 8, nSudoku, .5, 10, JSON.parse(tanda[1].solucion));
+    //cuadro(pdf, 120, 110, 9, nSudoku, .5, 10, JSON.parse(tanda[3].solucion));
+
+    /*cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[4].solucion));
+    cuadro(pdf, 120, 200, 9, nSudoku, .5, 10, JSON.parse(tanda[5].solucion));*/
+    // Guarda el PDF con un nombre específico
+    pdf.save('Hojas2pdfs.pdf');
 }
 
 const generar6Pdf = () => {
@@ -299,7 +787,7 @@ const generar24Pdf = () => {
     pdf.save('Hojas24pdfs.pdf');
 }
 
-const tableroNuevo = () => {
+const tableroNuevo = (patron) => {
     puestas = [];
     quedan = [];
     tablero = generaConjuntosVacios(nSudoku);//[[], [], [], [], [], [], [], [], []];
@@ -310,14 +798,46 @@ const tableroNuevo = () => {
     valBloque = [];
     numeros = [];
     quedan = [];
-    ponCasillas();
+    if(patron!==undefined)ponCasillas(patron);
+    else ponCasillas();
     ponTablero();
     ponCaracteres();
     generaHtml();
 }
 
+let  TabDis;
+//para hacer condiseños diferentes de tablero
+let generaAlAzarTab = () => {alert(TabDis)
+    let kk='';
+    for(let i=0;i<casillasBloque.length;i++){
+        kk+=i+': '+JSON.stringify(casillasBloque[i])+'\n';
+    }
+    alert(kk)
+    alert ('posBloque\n'+JSON.stringify(casillasBloquePos))
+    kk='';
+    for(let i=0;i<nSudoku;i++){
+        kk+='[';
+        for(let j=0;j<nSudoku;j++){
+            kk+=bloques[i][j]+'-'+casillasBloquePos[i][j]+', ';
+        }
+        kk+=']\n';
+    }
+    alert(kk);
+    //casillasBloque[bloques[fil][col]]
+    tableroNuevo(TabDis);
+    while (quedanN > 0) {
+        let c = quedan[Math.floor(quedanN * Math.random())];
+        cierra(c.v, c.f, c.c, 's');
+    }
+}
+
+
 const generaAlAzar = () => {
 
+    /*let ahora = new Date();
+    let  milisegundos = ahora.getMilliseconds();
+    let vuelve=false;*/
+    
     tableroNuevo();
     /*puestas = [];
     quedan = [];
@@ -329,7 +849,7 @@ const generaAlAzar = () => {
     valBloque = [];
     numeros = [];
     quedan = [];
-    ponCasillas();
+    //ponCasillas();
     ponTablero();
     ponCaracteres();
     generaHtml();*/
@@ -337,14 +857,22 @@ const generaAlAzar = () => {
     while (quedanN > 0) {
         let c = quedan[Math.floor(quedanN * Math.random())];
         cierra(c.v, c.f, c.c, 's');
+        /*if((new Date()).getMilliseconds-milisegundos>10000){
+            vuelve=true;
+            break;
+        }*/
     }
+    //if(vuelve)generaAlAzar()
     //alert(JSON.stringify(puestas))
     //reGeneraHtml()
 }
 //let finiquitadas=[];
 //let reubicadas=[];
+let kacososo='kacososo: ';
 const actQuedan = (celda) => {
     let aux = quedan[quedanN - 1];
+    //alert(JSON.stringify(celda)+'-'+JSON.stringify(aux))
+    kacososo+=JSON.stringify(celda)+'-'+JSON.stringify(aux)+'\n'
     if (aux !== celda) {
         quedan[quedanN - 1] = celda;
         let pos = celda.pos[celda.pos.length - 1];
@@ -358,6 +886,9 @@ const actQuedan = (celda) => {
         }*/
         quedan[pos] = aux;
     }
+    //alert('++++'+JSON.stringify(celda)+'+'+JSON.stringify(aux))
+    kacososo+=JSON.stringify(celda)+'-'+JSON.stringify(aux)+'\n\n'
+
     //reubicadas.push(quedan[pos]);
     quedanN--;
 }
@@ -368,6 +899,7 @@ const deshacer = () => {
         ttx += (i) + ': ' + JSON.stringify(quedan[i]) + ',\n'
     }
     //alert(ttx+']');
+    let ultimaSeleccionada;
     let p = quedanN;
     let ultimaJugada = [];
     //alert('ll'+p)
@@ -415,6 +947,7 @@ const deshacer = () => {
             tablero[celda.f][celda.c].valor = -1;
             //alert(JSON.stringify(celda)+tablero[celda.f][celda.c].valor)
             if (celda.estado === 's') {
+                ultimaSeleccionada=celda;
                 puestas.pop();
                 //puestas.push([tablero[i][j].posibles.numeros[valor]]);
                 posHistoria = puestas.length;
@@ -440,6 +973,7 @@ const deshacer = () => {
 
     //alert('siii'+JSON.stringify(tablero));
     generaHtml();
+    return ultimaSeleccionada;
 
 }
 
@@ -475,6 +1009,18 @@ const ResuelveBruta = () => {
         generaHtml();
     }
     //}
+}
+
+const ResuelveBruta2 = () => {
+
+    
+
+    while (quedanN > 0) {
+        let c = quedan[Math.floor(quedanN * Math.random())];
+        cierra(c.v, c.f, c.c, 's');
+        
+    }
+   
 }
 
 
@@ -616,7 +1162,8 @@ const genHistorial = (n) => {
 ponCasillas();
 ponTablero();
 
-const generaHtml = () => {//alert('siiii')
+
+const generaHtml = () => {//alert('siiii'+JSON.stringify(tablero))
     //let container = document.getElementById("sudoku-container");
     //container.innerHTML = "";
     let cuerpo = document.getElementById("cuerpo");
@@ -627,7 +1174,7 @@ const generaHtml = () => {//alert('siiii')
     if( nSudoku===4)container.className = "sudoku-container4";
     else if(nSudoku===16 ) container.className = "sudoku-container16";
     else container.className = "sudoku-container";//sudoku de 9
-    container.innerHTML = "";
+    container.innerHTML = "";//alert(tablero[0][0].valor);
     //container = document.getElementById("sudoku-container"+contenedor);
     for (let i = 0; i < nSudoku; i++) {
         for (let j = 0; j < nSudoku; j++) {
@@ -637,6 +1184,14 @@ const generaHtml = () => {//alert('siiii')
             if (tablero[i][j].valor >= 0) {//alert(i+'-'+j);
                 //div.textContent = tablero[i][j].valor;
                 div.textContent = caracteres[tablero[i][j].valor];
+
+                let nb=bloques[i][j];
+                //div.textContent = nb;
+                //rgb(255, 255, 128)
+                div.style.backgroundColor='rgb('+(100+Math.floor(155/nSudoku)*nb)+','+ (255-Math.floor(155/nSudoku)*nb)+', 255)';
+            
+
+
                 //div.style.color("red");
                 //div.classList.add("fixed");
                 //alert(''+i+','+j+' : '+tablero[i][j].posibles.numeros[tablero[i][j].valor].estado)
@@ -685,6 +1240,85 @@ const compactaPosiblesCeldas = (arreglo) => {
     });
     return posibles;
 }
+//para diseñar tableros con bloques no cuadrados
+const disenaTablero=()=>{
+    let cuerpo = document.getElementById("diseno");
+    let container = document.createElement("div");
+    container.id = 'sudoku-diseno';
+    if( nSudoku===4)container.className = "sudoku-container4";
+    else if(nSudoku===16 ) container.className = "sudoku-container16";
+    else container.className = "sudoku-container";//sudoku de 9
+    container.innerHTML = "";
+    //container.className = "sudoku-container";
+    container.innerHTML = "";
+    for (let i = 0; i < nSudoku; i++) {
+        for (let j = 0; j < nSudoku; j++) {
+            let div = document.createElement("div");
+            div.id = 'd' + i + '_' + j;
+            //getCasBloque = (i, j)
+            //bloques[fil][col]
+            //div.textContent = getCasBloque(i, j);
+            let nb=bloques[i][j];
+            div.textContent = nb;
+            //rgb(255, 255, 128)
+            let col1=100+Math.floor(155/nSudoku)*nb;
+            let col2=255-Math.floor(155/nSudoku)*nb;//alert(nb%2)
+            //div.style.backgroundColor='rgb('+(100+Math.floor(155/nSudoku)*nb)+','+ (255-Math.floor(155/nSudoku)*nb)+', 255)';        
+            div.style.backgroundColor='rgb('+(nb%2===0?col1:col2)+','+ (nb%2===0?col2:col1)+', 255)';        
+    
+            //div.style.backgroundColor='rgb('+(100+Math.floor(155/nSudoku)*nb)+','+ (255-Math.floor(155/nSudoku)*nb)+', 255)';
+            //alert(getCasBloque(i, j));
+            let cccc = GeneraNumerosSeg(nSudoku);
+            div.addEventListener("click", () => {
+                constructor(bloques[i][j], i, j, cccc);
+            });
+            container.appendChild(div);
+        }
+        
+    }
+    while (cuerpo.firstChild) {
+        cuerpo.removeChild(cuerpo.firstChild);
+    }
+    cuerpo.appendChild(container);
+}
+
+const constructor = (nb, i,j, elegibles)=>{//alert(elegibles)
+    activo = false;
+    let sel = '<select id="cons_' + i + '_' + j + '" name="cons" onchange="disena(this.value,' + i + ',' + j + ')">';
+    elegibles.forEach(p => {
+        if(p=== +nb) sel += '<option value="' + p + '" selected> ' + p + '</option>';
+        else sel += '<option value="' + p + '"> ' + p + '</option>';
+    });
+    sel += '</select>';
+    let ddiv = document.getElementById('ddiv');
+    ddiv.style.zIndex = 200;
+    ddiv.style.backgroundColor = '#ccc';
+    ddiv.style.left = pos.x + 'px';
+    ddiv.style.top = pos.y + 'px';
+    ddiv.innerHTML = sel;
+    ddiv.style.display = "block";
+}
+const disena=(nb, i, j)=>{
+    //alert(`nb=${nb}, i=${i}, j=${j}`);
+    let ddiv = document.getElementById('ddiv');
+    ddiv.style.display = "none";
+    let div = document.getElementById('d'+ i + '_' + j)
+    div.textContent = nb;
+    bloques[i][j]=+nb;
+    let col1=100+Math.floor(155/nSudoku)*nb;
+    let col2=255-Math.floor(155/nSudoku)*nb;//alert(nb%2)
+    //div.style.backgroundColor='rgb('+(100+Math.floor(155/nSudoku)*nb)+','+ (255-Math.floor(155/nSudoku)*nb)+', 255)';        
+    div.style.backgroundColor='rgb('+(nb%2===0?col1:col2)+','+ (nb%2===0?col2:col1)+', 255)';        
+    activo = true;
+    //alert(JSON.stringify(bloques))
+}
+const finDisenno=()=>{//alert(JSON.stringify(bloques))
+    TabDis=JSON.stringify(bloques);
+    ponCasillas(TabDis);
+    ponTablero();
+    //alert(JSON.stringify(tablero))
+}
+//Fin para diseñar tableros con bloques no cuadrados
 
 const selector = (i, j, elegibles) => {//alert(i+','+j+' kkk'+elegibles)
     activo = false;
@@ -820,11 +1454,14 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
 
     //let bloques = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
     if (v !== '-1') {
-        let valor = parseInt(v);//alert(valor)
+        let valor = parseInt(v);
         let bq = tablero[i][j].posibles.numeros[valor].b;
-
+        let bqsF=generaMenosUnos(nSudoku);
+        let bqsC=generaMenosUnos(nSudoku);//alert(bqsF)
+        //alert(valor+'bloque: '+tablero[i][j].posibles.numeros[valor].b+estado)
         tablero[i][j].posibles.numeros[valor].estado = estado;//'s';
         tablero[i][j].valor = valor;
+        //alert(tablero[i][j].posibles.numeros[valor].estado+': '+tablero[i][j].valor)
         if (estado === 's') {
             puestas.push([tablero[i][j].posibles.numeros[valor]]);
             posHistoria = puestas.length;
@@ -836,6 +1473,8 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
         filas[i].huecos--;
         columnas[j].huecos--;
         valBloque[bq].huecos--;
+        ///
+        trataGrupos(tablero[i][j].posibles.numeros[valor],bq,'b');
 
 
         /*if (bloques[bq] === -1) bbloques.push(bq)
@@ -847,16 +1486,52 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
             //mbloques[bq] = bq;
         }
 
+        let porBlok=valBloque[bq].numeros[valor].celdas;
+        //alert('--++--'+JSON.stringify(valBloque[bq].numeros[valor].celdas))
+        
+        let nceldasE=0
         for (let k = 0; k < nSudoku; k++) {
             //tablero[i][j] = { valor: -1, posibles:{n:9, numeros:[]}}
             if (k !== valor) {
                 let celda = tablero[i][j].posibles.numeros[k];
                 if (celda.estado === 'c') eliminaCelda(celda, valor, i, j);
-                if (numeros[k].filas[i].col[j].estado === 'c') eliminaCelda(numeros[k].filas[i].col[j], valor, i, j);
-
+                //if (numeros[k].filas[i].col[j].estado === 'c') eliminaCelda(numeros[k].filas[i].col[j], valor, i, j);
+                nceldasE++
             }
 
-            if (!(valBloque[bq].numeros[valor].celdas[k].f === i && valBloque[bq].numeros[valor].celdas[k].c === j)) {
+            if(porBlok[k].estado==='c'){
+                let celda=porBlok[k];
+                eliminaCelda(celda, celda.v, celda.f, celda.c);
+                nceldasE++
+            }
+            //let bqsF=generaMenosUnos();
+            //let bqsC=generaMenosUnos();
+            if (tablero[i][k].posibles.numeros[valor].estado === 'c') {
+                let celda = tablero[i][k].posibles.numeros[valor];
+                eliminaCelda(celda, celda.v, celda.f, celda.c);
+                nceldasE++
+                ////nuevo proceso
+                //alert(celda.b+'-'+bq+'-'+bqsF[celda.b])
+                if(celda.b!==bq&&bqsF[celda.b]===-1){//alert('en fila'+i)
+                    trataGrupos(celda,bq,'f');
+                    bqsF[celda.b]=celda.b
+                }
+            }
+            if (tablero[k][j].posibles.numeros[valor].estado === 'c') {
+                let celda = tablero[k][j].posibles.numeros[valor];
+                eliminaCelda(celda, celda.v, celda.f, celda.c);
+                nceldasE++
+                //nuevo proceso
+                if(celda.b!==bq&&bqsC[celda.b]===-1){
+                    trataGrupos(celda,bq,'c');
+                    bqsC[celda.b]=celda.b
+                }
+            }
+            
+
+            //if()
+
+            /*if (!(valBloque[bq].numeros[valor].celdas[k].f === i && valBloque[bq].numeros[valor].celdas[k].c === j)) {
                 let celda = valBloque[bq].numeros[valor].celdas[k];
                 if (celda.estado === 'c') eliminaCelda(celda, valor, i, j);
                 if (numeros[valor].filas[celda.f].col[celda.c].estado === 'c') eliminaCelda(numeros[valor].filas[celda.f].col[celda.c], valor, i, j);
@@ -865,14 +1540,7 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
             let bqfaux = tablero[i][k].posibles.numeros[valor].b;
 
             if (bqfaux !== bq) {
-                //if (bloques[bqfaux] === -1) bbloques.push(bqfaux)
-                //bloques[bqfaux] = bqfaux;
-                /*if (lbloques[bqfaux] === -1){ 
-                    bbloques.push(bqfaux);
-                    lbloques[bqfaux] = bqfaux;
-                    nbloques.push(bqfaux);
-                    mbloques[bqfaux] = bqfaux;
-                }*/
+                
                 if (tablero[i][k].posibles.numeros[valor].estado === 'c') {
 
                     let celda = tablero[i][k].posibles.numeros[valor];
@@ -883,14 +1551,7 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
             let bqcaux = tablero[k][j].posibles.numeros[valor].b;;
 
             if (bqcaux !== bq) {
-                //if (bloques[bqcaux] === -1) bbloques.push(bqcaux)
-                //bloques[bqcaux] = bqcaux;
-                /*if (lbloques[bqcaux] === -1){ 
-                    bbloques.push(bqcaux);
-                    lbloques[bqcaux] = bqcaux;
-                    nbloques.push(bqcaux);
-                    mbloques[bqfaux] = bqcaux;
-                }*/
+                
                 if (tablero[k][j].posibles.numeros[valor].estado === 'c') {
 
                     let celda = tablero[k][j].posibles.numeros[valor];
@@ -898,9 +1559,9 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
                     if (numeros[valor].filas[celda.f].col[celda.c].estado === 'c') eliminaCelda(numeros[valor].filas[celda.f].col[celda.c], valor, i, j);
                 }
 
-            }
+            }*/
         }
-
+        //alert(JSON.stringify(fijados)+'++++----'+ nceldasE+'\n'+kacososo)
         /*tablero[i][j].posibles.numeros[valor].estado = estado;//'s';
         tablero[i][j].valor = valor;
         if (estado === 's') {
@@ -919,32 +1580,228 @@ const cierra = (v, i, j, estado) => {//alert(estado)//alert(JSON.stringify(bbloq
         'f '+JSON.stringify(lfilas)+'-'+JSON.stringify(bfilas)+'\n'+
         'c '+JSON.stringify(lcolumnas)+'-'+JSON.stringify(bcolumnas)+'\n'+
         'v '+JSON.stringify(lnumeros)+'-'+JSON.stringify(bnumeros)+'\n')*/
-        while (bbloques.length > 0 || bfilas.length > 0 || bcolumnas.length > 0) {
-            /*fija2();
-            fija3();
-            fija4();*/
-            //fijaNum();
+
+        //alert(fijados.length+'\n'+JSON.stringify(fijados))
+        //no se hace comprobacion de agrupaciones de más de una
+        /*while (bbloques.length > 0 || bfilas.length > 0 || bcolumnas.length > 0) {
+            
             fijaGen('b');
             fijaGen('f');
             fijaGen('c');
 
-            //fija();
-        }
-
-
+            
+        }*/
+        //alert('+++'+fijados.length)
+        //alert('siii')
         div.textContent = valor;
         div.style.color = 'red';
+        //ponfijados();
+        while(normalizables.length>0||filasColLimpiables.length>0){
+            normaliza();
+        //while(filasColLimpiables.length>0){
+            //alert(JSON.stringify(filasColLimpiables))
+            limpiaFilasCol();
+        }
         //alert(JSON.stringify(tablero));
         if (fijados.length > 0) {
             //alert(JSON.stringify(fijados));
             ponfijados();
+            
         } else generaHtml();
         //alert(JSON.stringify(valBloque))
 
         //repasaTodo();
+        ///////////////
+        //if(elem.nv===elem.n)normalizables.push({b:bq, el:elem});
+        
+        /////////////
     }
     activo = true;
+    //alert(JSON.stringify(gruposBq))
+    //alert(kacososo);
     //alert(JSON.stringify(puestas));
+}
+
+const normaliza=()=>{
+    //alert(JSON.stringify(normalizables)+'++..'+normalizables.length)
+        while(normalizables.length>0){//alert(JSON.stringify(normalizables))
+            let pack=normalizables.splice(0,1)[0];
+            let el=pack.el;
+            let cs=casillasBloque[pack.b];
+            let filas = generaConjuntosVacios(nSudoku);
+            let col=generaConjuntosVacios(nSudoku);
+            //alert(JSON.stringify(el)+'\n'+JSON.stringify(cs))
+            cs.forEach(c=>{
+                
+                //alert(c[0]+':'+el.f[c[0]]+'\n'+c[1]+':'+el.c[c[1]]+'\n'+
+                //JSON.stringify(el.v)+'\n'+JSON.stringify( tablero[c[0]][c[1]].posibles.numeros))
+                if(el.f[c[0]]===-1&&el.c[c[1]]===-1){//en filas
+                    
+                    for(let i=0;i<nSudoku;i++){
+                        if(el.v[i]===-1){
+                            let celda = tablero[c[0]][c[1]].posibles.numeros[i];
+                            //alert(JSON.stringify(celda))
+                            if (celda.estado==='c'){//alert(JSON.stringify(celda))
+                                eliminaCelda(celda, celda.v, celda.f, celda.c);
+                                /*if(filas.lengh===0){
+                                    filas.push(c[0])
+                                }else{
+                                    if(filas[0]!==c[0])filas.push(c[0]);
+                                }
+                                if(col.lengh===0){
+                                    col.push(c[1])
+                                }else{
+                                    if(col[0]!==c[1])col.push(c[1]);
+                                }*/
+                            }
+                        }else{
+                            let celda = tablero[c[0]][c[1]].posibles.numeros[i];
+                            if (celda.estado==='c'){
+                                if(filas[i].lengh===0){
+                                    filas[i].push(c[0])
+                                }else{
+                                    if(filas[i][0]!==c[0])filas[i].push(c[0]);
+                                }
+                                if(col[i].lengh===0){
+                                    col[i].push(c[1])
+                                }else{
+                                    if(col[i][0]!==c[1])col[i].push(c[1]);
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    //if(!(el.f[c[0]]===-1||el.c[c[1]]===-1))
+                    for(let i=0;i<nSudoku;i++){
+                        if(el.v[i]===-1){
+                            let celda = tablero[c[0]][c[1]].posibles.numeros[i];
+                            if (celda.estado==='c'){
+                                if(filas[i].lengh===0){
+                                    filas[i].push(c[0])
+                                }else{
+                                    if(filas[i][0]!==c[0])filas[i].push(c[0]);
+                                }
+                                if(col[i].lengh===0){
+                                    col[i].push(c[1])
+                                }else{
+                                    if(col[i][0]!==c[1])col[i].push(c[1]);
+                                }
+                            }
+                        }
+                    }
+                }
+            })            
+            el.pendiente=false;
+            //alert('f:'+JSON.stringify(filas)+'\nc:'+JSON.stringify(col))
+            for(let ei=0;ei<filas.length;ei++){
+                let nforg=nBqFC[ei][pack.b].nf
+                let j=0;
+                let ncam=0;
+                nBqFC[ei][pack.b].nf=0;
+                while (ncam<nforg){
+                    if(nBqFC[ei][pack.b].f[j]>-1){
+                        nBqFC[ei][pack.b].f[j]=-2;
+                        ncam++
+                    }
+                    j++
+                }
+                
+                 //nBqFC[i][j]={}
+            //nBqFC[i][j].f=generaMenosUnos(nSudoku);
+            //nBqFC[i][j].nf=0;
+            //nBqFC[i][j].c=generaMenosUnos(nSudoku);
+            //nBqFC[i][j].nc=0;
+            //nBqFC[i][j].Fpendiente=true; 
+            //nBqFC[i][j].Cpendiente=true; 
+                 
+                for(let j=0;j<filas[ei].length;j++){
+                    if(nBqFC[ei][pack.b].f[filas[ei][j]]===-2){
+                        nBqFC[ei][pack.b].f[filas[ei][j]]=filas[ei][j];
+                        nBqFC[ei][pack.b].nf++;
+                    }
+                }
+                nBqFC[ei][pack.b].Fpendiente=true;
+            //if(nBqFC[i][celda.b].nc===1&&nBqFC[i][celda.b].Cpendiente){
+            //filasColLimpiables.push({tipo:'c', v:i, b:celda.b,fc:fci}
+            if(filas[ei].length===1){//alert(ei+':\n'+JSON.stringify(filas)+'\n'+ei+'-'+pack.b+JSON.stringify(nBqFC[ei][pack.b]))
+                if(/*nBqFC[ei][pack.b].nf===1&&*/nBqFC[ei][pack.b].Fpendiente){
+                    filasColLimpiables.push({tipo:'f', v:ei, b:pack.b,fc:filas[ei][0]})
+                    //alert('++++'+JSON.stringify(filasColLimpiables))
+                }
+                /*let bqsF=generaMenosUnos(nSudoku);
+                for(let i=0;i<nSudoku;i++){
+                    //for(let j=0;j<nSudoku;j++){
+                        let celda = tablero[filas[ei][0]][i].posibles.numeros[ei];
+                        if(celda.b!==pack.b&&celda.estado==='c'){
+                            eliminaCelda(celda, celda.v, celda.f, celda.c);
+                            if(bqsF[celda.b]===-1){
+                                trataGrupos(celda,pack.b,'f');
+                                bqsF[celda.b]=celda.b
+                            }
+                        }
+                    //}
+                }*/
+            }}
+            for(let ei=0;ei<col.length;ei++){
+
+                //for(let ei=0;ei<col.length;ei++){
+                    let ncorg=nBqFC[ei][pack.b].nc
+                    let j=0;
+                    let ncam=0;
+                    nBqFC[ei][pack.b].nc=0;
+                    while (ncam<ncorg){
+                        if(nBqFC[ei][pack.b].c[j]>-1){
+                            nBqFC[ei][pack.b].c[j]=-2;
+                            ncam++
+                        }
+                        j++
+                    }
+                    
+                     //nBqFC[i][j]={}
+                //nBqFC[i][j].f=generaMenosUnos(nSudoku);
+                //nBqFC[i][j].nf=0;
+                //nBqFC[i][j].c=generaMenosUnos(nSudoku);
+                //nBqFC[i][j].nc=0;
+                //nBqFC[i][j].Fpendiente=true; 
+                //nBqFC[i][j].Cpendiente=true; 
+                     
+                    for(let j=0;j<col[ei].length;j++){
+                        if(nBqFC[ei][pack.b].c[col[ei][j]]===-2){
+                            nBqFC[ei][pack.b].c[col[ei][j]]=col[ei][j];
+                            nBqFC[ei][pack.b].nc++;
+                        }
+                    }
+                    nBqFC[ei][pack.b].Cpendiente=true;
+            if(col[ei].length===1){              
+
+                if(/*nBqFC[ei][pack.b].nc===1&&*/nBqFC[ei][pack.b].Cpendiente){
+                    filasColLimpiables.push({tipo:'c', v:ei, b:pack.b,fc:col[ei][0]})
+                    //alert('++++'+JSON.stringify(filasColLimpiables))
+                }
+                /*let bqsC=generaMenosUnos(nSudoku);
+                for(let i=0;i<nSudoku;i++){
+                    //for(let j=0;j<nSudoku;j++){
+                        let celda = tablero[i][col[ei][0]].posibles.numeros[ei];
+                        if(celda.b!==pack.b&&celda.estado==='c'){
+                            eliminaCelda(celda, celda.v, celda.f, celda.c);
+                            if(bqsC[celda.b]===-1){
+                                trataGrupos(celda,pack.b,'c');
+                                bqsC[celda.b]=celda.b
+                            }
+                        }
+                    //}
+                }*/
+            }}
+        }
+        //alert(JSON.stringify(filasColLimpiables))
+        /*if (filasColLimpiables.length>0){
+            //alert('*'+JSON.stringify(filasColLimpiables))
+            limpiaFilasCol();
+        }*/
+        //filasColLimpiables.push({tipo:'c', v:i, b:celda.b,fc:fci}
+        //let filasColLimpiables=[];
+        //const limpiaFilasCol=(/*tipo,v,b,fc*/)=>{
+        //alert(JSON.stringify(normalizables)+'++..'+normalizables.length)
 }
 
 
@@ -1543,20 +2400,40 @@ const ponfijados = () => {
         reGeneraHtml(posHistoria)*/
         let sol = {};
         fijados = [];//limpiamos fijados 
+        let problematica=deshacer();
+        if (problematica.estado === 'c') eliminaCelda(problematica, problematica.v, problematica.f, problematica.c);
+        else alert('Ha fallado algo: '+JSON.stringify(problematica));
+        if(false&&puestas.length>90){//bloqueamos esto
         do {
-            deshacer();
+            //deshacer();
             sol = muestraTablero3();
+            if(sol.resultados.length===0){
+                problematica=deshacer();
+                if (problematica.estado === 'c') eliminaCelda(problematica, problematica.v, problematica.f, problematica.c);
+                else alert('Ha fallado algo: '+JSON.stringify(problematica));
+            }
             //alert('ppppp'+sol.resultados.length);
         } while (sol.resultados.length < 1)
         //{ puestosIni, resultados: TEnsayos}
         //cierra = (v, i, j, estado)
-        while (sol.resultados.length > 1) {
-            let ens = JSON.parse(sol.resultados[Math.floor(2 * Math.random())])[sol.puestosIni];
+        if(sol.resultados.length > 1) {
+            //let ens = JSON.parse(sol.resultados[Math.floor(2 * Math.random())])[sol.puestosIni];
+            let ens = JSON.parse(sol.resultados[Math.floor(2 * Math.random())]);
+            let p=sol.puestosIni;
             //alert('nnnn '+JSON.stringify(ens))
-            cierra(ens.v, ens.f, ens.c, 's')
-            sol = muestraTablero3();
-        }
-        if (sol.resultados.length === 1) {
+            while (quedanN > 0) {
+                //let c = quedan[Math.floor(quedanN * Math.random())];
+                //alert(JSON.stringify(tablero[ens[p].f][ens[p].c].posibles.numeros[ens[p].v]))
+                if(tablero[ens[p].f][ens[p].c].posibles.numeros[ens[p].v].estado==='c') cierra(ens[p].v, ens[p].f, ens[p].c, 's');
+                p++;
+                /*if((new Date()).getMilliseconds-milisegundos>10000){
+                    vuelve=true;
+                    break;
+                }*/
+            }
+            /*cierra(ens.v, ens.f, ens.c, 's')
+            sol = muestraTablero3();*/
+        }else if (sol.resultados.length === 1) {
             //let ens=JSON.parse(sol.resultados[Math.floor(2*Math.random())])
             //alert(JSON.stringify(sol))
             let ens = JSON.parse(sol.resultados[0]);
@@ -1566,6 +2443,7 @@ const ponfijados = () => {
                 pini++
             }
 
+        }
         }
 
         //eliminaCelda(ce,ce.v,ce.f,ce.c,'si');
@@ -1643,7 +2521,7 @@ const muestraTablero = () => {
     let posVal = 0;
     let imposible = false;
     let TEnsayos = [];
-    alert('+++\n' + JSON.stringify(ensayosL))
+    //alert('+++\n' + JSON.stringify(ensayosL))
     do { //alert(puestos+'ll\n'+JSON.stringify(ensayo)+'--'+posEn+': '+JSON.stringify(ensayosL[posEn]));
         let e = ensayosL[posEn];
 
@@ -1719,7 +2597,7 @@ const muestraTablero = () => {
             }
         }
     }
-    alert('+++\n' + JSON.stringify(DensayosL));
+    //alert('+++\n' + JSON.stringify(DensayosL));
     for (let i = 0; i < DensayosL.length; i++) {
         //eliminaCelda(cel,ce.v,ce.f,ce.c);
         if (DensayosL[i].nV === 1) {//fijamos
@@ -1858,7 +2736,7 @@ const muestraTablero2 = () => {
     let posVal = 0;
     let imposible = false;
     let TEnsayos = [];
-    alert('+++\n' + JSON.stringify(ensayosL))
+    //alert('+++\n' + JSON.stringify(ensayosL))
     do { //alert(puestos+'ll\n'+JSON.stringify(ensayo)+'--'+posEn+': '+JSON.stringify(ensayosL[posEn]));
         let e = ensayosL[posEn];
 

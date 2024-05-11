@@ -36,11 +36,18 @@
         <option value="13">13</option>
         <option value="14">14</option>
         <option value="15">15</option>
+    </select><br>
+    ¿Cuántas casillas?<select id="tipo" onchange="nSudoku=+this.value;ponCaracteres();tableroNuevo()">
+        <option value="4">4</option>
+        <option value="9" selected>9</option>
+        <option value="16">16</option>
     </select>
+
 
         <div id="cuerpo"></div>
         <span id="cuerpo0"></span><span id="cuerpo1"></span><span id="cuerpo2"></span>
         <span id="cuerpo3"></span><span id="cuerpo4"></span><span id="cuerpo5"></span>
+        <div id="diseno"></div>
         <input type="file" id="archivoInput">
         <button onclick="cargarArchivo()">Cargar Archivo</button>
         <div id="contenidoArchivo"></div>
@@ -58,6 +65,11 @@
         <button onclick="generarPDF()">Generar PDF</button>
         <button onclick="generar6Pdf()">Generar Hoja PDF con 6 sudokus</button>
         <button onclick="generaAlAzar()">Generar al azar</button>
+        <button onclick="disenaTablero()">Diseño</button>
+        <button onclick="finDisenno()">fin del diseño</button>
+        <button onclick="generaAlAzarTab()">Generar al azar con tablero de diseño</button>
+        <button onclick="GenConjBq();alert(JSON.stringify(conjBq))">Muestra conjuntos</button>
+        <button onclick="ponCaracteres();tableroNuevo(TabDis);GenConjBq();GenNBqFC()">Generar nuevo Sudoku con el diseño</button><br>
 
 
         <div id="ddiv"
