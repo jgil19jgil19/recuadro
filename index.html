@@ -5,27 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>-->
+    <!--<script type="text/javascript" src="./jsPDF/jspdf.umd.min.js"></script>-->
     <script type="text/javascript" src="./jsPDF-1.3.2/dist/jspdf.debug.js"></script>
+    <!--<script type="text/javascript" src="../dist/jspdf.debug.js"></script>-->
     <script src="tablero.js"></script>
-    <script src="sudokupdf.js"></script>
-    <title>Sudokus y pdf con 6</title>
+    <!--<script src="sudokupdf.js"></script>-->
+    <title>Generar PDF con recuadros 9x9</title>
 </head>
 
-<body onmousemove="obtenerCoordenadas(event)">
-    <h1>Sudoku, solucionador y generador.</h1>
+<body onmousemove="obtenerCoordenadas(event)"
+    onload="nSudoku=+document.getElementById('tipo').value;ponCaracteres('miInput');/*tableroNuevo()*/">
+    <h1>Generador de Sudokus <span id="tipoS">9</span></h1>
     <label for="miInput">Caracteres del sudoku:</label>
     <input type="text" id="miInput" name="miInput" value="123456789">
-    ¿Cuántas casillas?<select id="tipo" onchange="nSudoku=+this.value;ponCaracteres();tableroNuevo()">
-        <option value="4">4</option>
-        <option value="9" selected>9</option>
-        <option value="16">16</option>
-    </select>
-    <div id="cuerpo"></div>
-    <button onclick="ponCaracteres();tableroNuevo()">Resuelve nuevo Sudoku</button>
-    <button onclick="deshacer()">deshacer</button>
-    <button onclick="ResuelveBruta()">Resuelve</button><br>
-    <div id="historial" style="visibility: hidden;"></div>
-    <button onclick="generar6Pdf()">Generar Hoja PDF con 6 sudokus de 9 numeros</button>
     <label for="miSelect">casillas extra sobre el mínimo del sudoku:</label>
     <select id="miSelect">
         <option value="0">0</option>
@@ -45,47 +38,76 @@
         <option value="14">14</option>
         <option value="15">15</option>
     </select><br>
-    <button onclick="generar24Pdf()">Generar Hoja PDF con 24 sudokus de 4 numeros</button>
-    <label for="miSelect2">casillas extra sobre el mínimo del sudoku:</label>
-    <select id="miSelect2">
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-    </select><br>
-    <button onclick="generar2Pdf()">Generar Hoja PDF con 2 sudokus de 16 numeros</button>
-    <label for="miSelect3">casillas extra sobre el mínimo del sudoku:</label>
-    <select id="miSelect3">
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
+    ¿Cuántas casillas?<select id="tipo" onchange="nSudoku=+this.value;ponCaracteres('miInput'); document.getElementById('tipoS').innerHTML=this.value/*tableroNuevo()*/">
         <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-        <option value="11">11</option>
-        <option value="12">12</option>
-        <option value="13">13</option>
-        <option value="14">14</option>
-        <option value="15">15</option>
-        <option value="16">6</option>
-        <option value="17">7</option>
-        <option value="18">8</option>
-        <option value="19">9</option>
-        <option value="20">10</option>
-        <option value="21">11</option>
-        <option value="22">12</option>
-        <option value="23">13</option>
-        <option value="24">14</option>
-        <option value="25">15</option>
-    </select>
+        <option value="9" selected>9</option>
+        <option value="16">16</option>
+    </select><br>
+    <input type="file" id="archivoInput">
+    <button onclick="cargarArchivo()">Cargar Archivo</button>&nbsp;<button onclick="guardarArchivo(HistPuestas)">Guardar Archivo</button>&nbsp;<button onclick="reGeneraHtml()">Rehace</button>
+    <div id="contenidoArchivo"></div>     
+        
+    <div id="coordenadas"></div>
+    <div id="historial"></div>
+    <button onclick=";inicia()">prueba</button><br>
+    <div id="cuerpo"></div>
+    <div id="diseno"></div>
+    <button onclick="disenaTablero('diseno')">Diseño</button>
+    <button onclick="finDisenno()">fin del diseño</button>
+    <button onclick="deshacer()">deshacer</button>
+    <button onclick="ResuelveBruta()">Resuelve</button>
+    <!--
+        <span id="cuerpo0"></span><span id="cuerpo1"></span><span id="cuerpo2"></span>
+        <span id="cuerpo3"></span><span id="cuerpo4"></span><span id="cuerpo5"></span>
+        <div id="diseno"></div>
+        <input type="file" id="archivoInput">
+        <button onclick="cargarArchivo()">Cargar Archivo</button>
+        <div id="contenidoArchivo"></div>
+        
+        <button onclick="guardarArchivo(HistPuestas)">Guardar Archivo</button>
+        <div id="historial"></div>
+        <button onclick="reGeneraHtml()">Rehace</button>
+        <button onclick="muestraTablero()">Tablero</button>
+        <button onclick="muestraTablero2()">Tablero2</button>
+        <button onclick="muestraTablero3()">Tablero3</button> 
+        <button onclick="ResuelveBruta()">Resuelve</button>
+        
+        <button onclick="ponCaracteres();tableroNuevo()">Generar nuevo Sudoku</button><br>
+        <button onclick="deshacer()">deshacer</button>
+        <button onclick="generarPDF()">Generar PDF</button>
+        <button onclick="generar6Pdf()">Generar Hoja PDF con 6 sudokus</button>
+        <button onclick="generaAlAzar()">Generar al azar</button>
+        <button onclick="disenaTablero()">Diseño</button>
+        <button onclick="finDisenno()">fin del diseño</button>
+        <button onclick="generaAlAzarTab()">Generar al azar con tablero de diseño</button>
+        <button onclick="GenConjBq();alert(JSON.stringify(conjBq))">Muestra conjuntos</button>
+        <button onclick="ponCaracteres();tableroNuevo(TabDis);GenConjBq();GenNBqFC();ponRepasoEliminables()">Generar nuevo Sudoku con el diseño</button><br>
+        <button onclick="alert('xx');reGeneraHtml(puestas.length - 1)">Lanza la carga</button><br>
+        -->
     <div id="ddiv"
         style="position: absolute;background-color: #ccc;padding: 10px; border: 1px solid #000; display: none;">
     </div>
+
+
+
+
+
+
+
+    <script>
+        let activo = true;
+        let pos = {};
+        function obtenerCoordenadas(event) {
+            if (activo) {
+                var x = event.clientX;
+                var y = event.clientY;
+                pos.x = x;
+                pos.y = y;
+            }
+            document.getElementById("coordenadas").innerHTML = "Coordenadas del ratón: " + x + ", " + y+'; '+JSON.stringify(pos);
+        }
+    </script>
+
 </body>
 
 </html>
