@@ -1293,7 +1293,7 @@ pdf.setLineWidth(grosorLinea);//le ponemos el pequeño
 
 }
 
-function generarPDF() {
+function generarPDF(datosSudoku) {
     // Crea un nuevo objeto jsPDF
     var pdf = new jsPDF();
     /*let tamannos=[];
@@ -1303,10 +1303,27 @@ function generarPDF() {
         aux=pdf.getTextDimensions('A').h;
     }*/
     //let caracteres=['9','1','2','3','4','5','6','7','8'];
-    //let caracteres=['A','B','C','D','E','F','G','H','I'];
+    let miNsudoku
+    let misCaracteres=['9','1','2','3','4','5','6','7','8'];
+    let misBloqes;
     let sudoku = [[{ v: 8, f: 0, c: 0, b: 0, estado: 's' }], [{ v: 3, f: 1, c: 2, b: 0, estado: 's' }], [{ v: 7, f: 2, c: 1, b: 0, estado: 's' }], [{ v: 6, f: 1, c: 3, b: 1, estado: 's' }], [{ v: 0, f: 2, c: 4, b: 1, estado: 's' }], [{ v: 2, f: 2, c: 6, b: 2, estado: 's' }], [{ v: 5, f: 3, c: 1, b: 3, estado: 's' }], [{ v: 1, f: 5, c: 3, b: 4, estado: 's' }], [{ v: 4, f: 4, c: 4, b: 4, estado: 's' }], [{ v: 5, f: 4, c: 5, b: 4, estado: 's' }], [{ v: 7, f: 3, c: 5, b: 4, estado: 's' }], [{ v: 7, f: 4, c: 6, b: 5, estado: 's' }], [{ v: 3, f: 5, c: 7, b: 5, estado: 's' }], [{ v: 1, f: 6, c: 2, b: 6, estado: 's' }], [{ v: 8, f: 7, c: 2, b: 6, estado: 's' }], [{ v: 0, f: 8, c: 1, b: 6, estado: 's' }], [{ v: 5, f: 7, c: 3, b: 7, estado: 's' }], [{ v: 4, f: 8, c: 6, b: 8, estado: 's' }], [{ v: 1, f: 7, c: 7, b: 8, estado: 's' }], [{ v: 6, f: 6, c: 7, b: 8, estado: 's' }], [{ v: 8, f: 6, c: 8, b: 8, estado: 's' }], [{ v: 0, f: 0, c: 8, b: 2, estado: 's' }, { v: 0, f: 1, c: 0, b: 0, estado: 'f' }], [{ v: 1, f: 8, c: 4, b: 7, estado: 's' }], [{ v: 1, f: 3, c: 0, b: 3, estado: 's' }, { v: 1, f: 2, c: 5, b: 1, estado: 'f' }, { v: 1, f: 0, c: 1, b: 0, estado: 'f' }, { v: 1, f: 4, c: 8, b: 5, estado: 'f' }, { v: 1, f: 1, c: 6, b: 2, estado: 'f' }], [{ v: 2, f: 5, c: 0, b: 3, estado: 's' }, { v: 7, f: 5, c: 2, b: 3, estado: 'f' }, { v: 0, f: 5, c: 5, b: 4, estado: 'f' }, { v: 0, f: 6, c: 3, b: 7, estado: 'f' }, { v: 0, f: 7, c: 6, b: 8, estado: 'f' }], [{ v: 8, f: 8, c: 5, b: 7, estado: 's' }, { v: 2, f: 1, c: 5, b: 1, estado: 'f' }, { v: 6, f: 7, c: 5, b: 7, estado: 'f' }, { v: 6, f: 4, c: 1, b: 3, estado: 'f' }, { v: 4, f: 6, c: 5, b: 7, estado: 'f' }, { v: 3, f: 0, c: 5, b: 1, estado: 'f' }, { v: 3, f: 2, c: 8, b: 2, estado: 'f' }, { v: 3, f: 4, c: 0, b: 3, estado: 'f' }, { v: 0, f: 4, c: 2, b: 3, estado: 'f' }, { v: 8, f: 5, c: 1, b: 3, estado: 'f' }, { v: 4, f: 5, c: 8, b: 5, estado: 'f' }, { v: 4, f: 3, c: 2, b: 3, estado: 'f' }, { v: 6, f: 0, c: 6, b: 2, estado: 'f' }, { v: 3, f: 6, c: 6, b: 8, estado: 'f' }, { v: 3, f: 8, c: 3, b: 7, estado: 'f' }, { v: 3, f: 7, c: 1, b: 6, estado: 'f' }, { v: 3, f: 3, c: 4, b: 4, estado: 'f' }, { v: 6, f: 3, c: 8, b: 5, estado: 'f' }, { v: 5, f: 6, c: 0, b: 6, estado: 'f' }, { v: 5, f: 5, c: 6, b: 5, estado: 'f' }, { v: 7, f: 0, c: 3, b: 1, estado: 'f' }, { v: 6, f: 5, c: 4, b: 4, estado: 'f' }, { v: 8, f: 1, c: 4, b: 1, estado: 'f' }, { v: 4, f: 7, c: 0, b: 6, estado: 'f' }, { v: 5, f: 0, c: 4, b: 1, estado: 'f' }, { v: 4, f: 2, c: 3, b: 1, estado: 'f' }, { v: 8, f: 2, c: 7, b: 2, estado: 'f' }, { v: 4, f: 1, c: 1, b: 0, estado: 'f' }, { v: 2, f: 6, c: 1, b: 6, estado: 'f' }, { v: 2, f: 0, c: 2, b: 0, estado: 'f' }, { v: 6, f: 8, c: 2, b: 6, estado: 'f' }, { v: 2, f: 8, c: 8, b: 8, estado: 'f' }, { v: 7, f: 6, c: 4, b: 7, estado: 'f' }, { v: 2, f: 7, c: 4, b: 7, estado: 'f' }, { v: 7, f: 7, c: 8, b: 8, estado: 'f' }, { v: 6, f: 2, c: 0, b: 0, estado: 'f' }, { v: 4, f: 0, c: 7, b: 2, estado: 'f' }, { v: 5, f: 2, c: 2, b: 0, estado: 'f' }, { v: 8, f: 4, c: 3, b: 4, estado: 'f' }, { v: 8, f: 3, c: 6, b: 5, estado: 'f' }, { v: 2, f: 3, c: 3, b: 4, estado: 'f' }, { v: 0, f: 3, c: 7, b: 5, estado: 'f' }, { v: 2, f: 4, c: 7, b: 5, estado: 'f' }, { v: 7, f: 8, c: 0, b: 6, estado: 'f' }, { v: 5, f: 8, c: 7, b: 8, estado: 'f' }, { v: 7, f: 1, c: 7, b: 2, estado: 'f' }, { v: 5, f: 1, c: 8, b: 2, estado: 'f' }]]
-    sudoku = JSON.parse(JSON.stringify(puestas));
-    let cuadSudoku = GeneraCuadroEspacios(nSudoku);/*[[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    let deDatos
+    if(datosSudoku!==undefined){
+        deDatos=JSON.parse(datosSudoku);
+        misCaracteres=deDatos.caracteres;
+        sudoku = deDatos.puestas;
+        miNsudoku=deDatos.nSudoku
+        misBloqes=JSON.parse(deDatos.TabDis)
+
+    }else{ //lo generamos del activo
+        misCaracteres=caracteres;
+        sudoku = JSON.parse(JSON.stringify(puestas));
+        miNsudoku=nSudoku;
+        misBloqes=bloques;
+    }
+
+    
+    let cuadSudoku = GeneraCuadroEspacios(miNsudoku);/*[[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -1315,7 +1332,7 @@ function generarPDF() {
     //alert(cuadSudoku)
     let fijados = [];
     sudoku.forEach(el => {
-        cuadSudoku[el[0].f][el[0].c] = caracteres[el[0].v]
+        cuadSudoku[el[0].f][el[0].c] = misCaracteres[el[0].v]
         /*if (el[0].v === 0) cuadSudoku[el[0].f][el[0].c] = '9'
         else cuadSudoku[el[0].f][el[0].c] = '' + el[0].v;*/
         el.forEach((it, i) => {
@@ -1327,27 +1344,46 @@ function generarPDF() {
     for (let i = 0; i < adicionales; i++) {
         let aux = Math.floor(fijados.length * Math.random());
         let kk = fijados.splice(aux, 1);
-        cuadSudoku[kk[0].f][kk[0].c] = caracteres[kk[0].v]
+        cuadSudoku[kk[0].f][kk[0].c] = misCaracteres[kk[0].v]
         /*if (kk[0].v === 0) cuadSudoku[kk[0].f][kk[0].c] = '9'
         else cuadSudoku[kk[0].f][kk[0].c] = '' + kk[0].v;*/
     }
     //generamos el cuadro solución
     fijados.forEach(fj => {
-        solSudoku[fj.f][fj.c] = caracteres[fj.v];
+        solSudoku[fj.f][fj.c] = misCaracteres[fj.v];
         /*if(fj.v===0)solSudoku[fj.f][fj.c]='9'
         else solSudoku[fj.f][fj.c]=''+fj.v;*/
     })
 
 
-    cuadro(pdf, 10, 20, 9, nSudoku, .5, 10, cuadSudoku,bloques );
-    cuadro(pdf, 120, 20, 9, nSudoku, .5, 10, solSudoku,bloques);
+    cuadro(pdf, 10, 20, 9, miNsudoku, .5, 10, cuadSudoku,misBloqes );
+    cuadro(pdf, 120, 20, 9, miNsudoku, .5, 10, solSudoku,misBloqes);
 
-    cuadro(pdf, 10, 110, 9, nSudoku, .5, 10, cuadSudoku,bloques);
-    cuadro(pdf, 10, 200, 9, nSudoku, .5, 10, cuadSudoku,bloques);
+    cuadro(pdf, 10, 110, 9, miNsudoku, .5, 10, cuadSudoku,misBloqes);
+    cuadro(pdf, 10, 200, 9, miNsudoku, .5, 10, cuadSudoku,misBloqes);
     9
 
     // Guarda el PDF con un nombre específico
     pdf.save('recuadros_9x9.pdf');
+}
+
+function cargarImprimeArchivo() {
+    var archivoInput = document.getElementById('archivoInput');
+    var contenidoArchivo = document.getElementById('contenidoArchivo');
+
+    var archivo = archivoInput.files[0];
+    var lector = new FileReader();
+
+    lector.onload = function (event) {
+        var contenido = event.target.result;
+        //alert(contenido)
+        //contenidoArchivo.textContent = contenido;
+        generarPDF(contenido)
+        //alert(HistPuestas)
+        
+    }
+
+    lector.readAsText(archivo);
 }
 
 
